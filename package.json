@@ -9,12 +9,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Trizo1/pacman-forge.git"
+    "url": "git+https://github.com/Trizo1/Pacman-Forge.git"
   },
   "bugs": {
-    "url": "https://github.com/Trizo1/pacman-forge/issues"
+    "url": "https://github.com/Trizo1/Pacman-Forge/issues"
   },
-  "homepage": "https://github.com/Trizo1/pacman-forge#readme",
+  "homepage": "https://github.com/Trizo1/Pacman-Forge#readme",
   "author": "",
   "license": "ISC",
   "dependencies": {
