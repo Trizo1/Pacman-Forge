@@ -4,22 +4,25 @@
     api: 'derivativeV2',  // for models uploaded to EMEA change this option to 'derivativeV2_EU'
     getAccessToken: getForgeToken,
 } */
-$("#viewer").click(function () {
-    NOP_VIEWER.getProperties(NOP_VIEWER.getSelection(), data => console.log(data))
-});
 let viewer;
 const documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmUuaXB0';
 
-$(document).ready(function () {
+document.addEventListener('DOMContentLoaded', function () {
     launchViewer();
 });
 
 function getForgeToken(onTokenReady) {
-    $.get("/oauth", (data) => {
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', '/oauth', false);
+    xhr.send();
+    if (xhr.status != 200) {
+        alert(xhr.status + ': ' + xhr.statusText);
+    } else {
+        let data = JSON.parse(xhr.responseText);
         const token = data.access_token;
         const timeInSeconds = data.expires_in;
         onTokenReady(token, timeInSeconds);
-    });
+    }
 }
 
 function launchViewer() {
