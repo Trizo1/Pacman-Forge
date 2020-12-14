@@ -1,3 +1,31 @@
+import { FRONT_LEVEL, OBJECT_TYPE, CELL_SIZE } from './setup';
+
+export function initGame() {
+    console.log(5);
+    console.log(FRONT_LEVEL);
+    console.log(OBJECT_TYPE);
+    console.log(CELL_SIZE);
+
+    //drawFrontFace();
+}
+
+function drawFrontFace() {
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 let sphere;
 let box, box1, box2, box3, box4, box5, box6, box7, box8, box9, box10, box11, box12, box13, box14, box15, box16, box17;
 let keysQ = [];
@@ -6,7 +34,7 @@ let reycaster;
 
 let intersects;
 
-var mesh = []
+var mesh = [];
 
 function createPacman() {
     const pacman = new THREE.SphereGeometry(10, 32, 32);

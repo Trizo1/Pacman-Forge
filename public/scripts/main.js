@@ -1,12 +1,12 @@
-
+import { initGame } from './game';
 /* const options = {
     env: 'AutodeskProduction',
     api: 'derivativeV2',  // for models uploaded to EMEA change this option to 'derivativeV2_EU'
     getAccessToken: getForgeToken,
 } */
 let viewer;
-const documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmUuaXB0';
-
+const documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL0NVQkVfdjAuaXB0';
+//dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmUuaXB0
 document.addEventListener('DOMContentLoaded', function () {
     launchViewer();
 });
@@ -38,11 +38,11 @@ function launchViewer() {
     };
 
     Autodesk.Viewing.Initializer(options, () => {
-        viewer = new Autodesk.Viewing.Viewer3D(document.getElementById('viewer'), config);
+        viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('viewer'), config);
         viewer.start();
         //viewer.addEventListener(Autodesk.Viewing.TOOLBAR_CREATED_EVENT, onToolBarCreated)
         viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, function () {
-            const tree = viewer.model.getInstanceTree();
+            /* const tree = viewer.model.getInstanceTree();
             const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
             material.side = THREE.DoubleSide;
             const materialManager = viewer.impl.matman();
@@ -56,7 +56,7 @@ function launchViewer() {
                     frags.setMaterial(fragid, material);
                 });
             }
-            viewer.impl.invalidate(true);
+            viewer.impl.invalidate(true); */
         });
         Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
     });
@@ -67,11 +67,10 @@ function onDocumentLoadSuccess(doc) {
     viewer.loadDocumentNode(doc, viewables).then(i => {
         let cubeExt = viewer.getExtension('Autodesk.ViewCubeUi');
         cubeExt.setViewCube('front');
-        //cubeExt.displayViewCube(false);
         cubeExt.setVisible(false);
 
         viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, (e) => {
-            viewer.setBackgroundColor(40, 40, 40, 40, 40, 40); //fix
+            //viewer.setBackgroundColor(60, 60, 60, 60, 60, 60); //fix
             viewer.setQualityLevel(true, true);
             viewer.setGhosting(true);
             viewer.setGroundShadow(false);
@@ -79,8 +78,16 @@ function onDocumentLoadSuccess(doc) {
             viewer.setProgressiveRendering(true);
 
             disableEventsEvents();
+            zoomCamera();
+            initGame;
         });
     });
+}
+
+function zoomCamera() {
+    let camera = viewer.navigation.getCamera();
+    camera.zoom = 1.25;
+    viewer.navigation.updateCamera();
 }
 
 function disableEventsEvents() {
