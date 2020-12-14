@@ -1,11 +1,12 @@
-import { initGame } from './game';
+import { initGame } from "./game.js";
 /* const options = {
     env: 'AutodeskProduction',
     api: 'derivativeV2',  // for models uploaded to EMEA change this option to 'derivativeV2_EU'
     getAccessToken: getForgeToken,
 } */
 let viewer;
-const documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL0NVQkVfdjAuaXB0';
+const documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmVWMi5pcHQ';
+//dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL0NVQkVfdjAuaXB0
 //dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmUuaXB0
 document.addEventListener('DOMContentLoaded', function () {
     launchViewer();
@@ -42,7 +43,7 @@ function launchViewer() {
         viewer.start();
         //viewer.addEventListener(Autodesk.Viewing.TOOLBAR_CREATED_EVENT, onToolBarCreated)
         viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, function () {
-            /* const tree = viewer.model.getInstanceTree();
+            const tree = viewer.model.getInstanceTree();
             const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
             material.side = THREE.DoubleSide;
             const materialManager = viewer.impl.matman();
@@ -56,7 +57,7 @@ function launchViewer() {
                     frags.setMaterial(fragid, material);
                 });
             }
-            viewer.impl.invalidate(true); */
+            viewer.impl.invalidate(true);
         });
         Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
     });
@@ -67,7 +68,8 @@ function onDocumentLoadSuccess(doc) {
     viewer.loadDocumentNode(doc, viewables).then(i => {
         let cubeExt = viewer.getExtension('Autodesk.ViewCubeUi');
         cubeExt.setViewCube('front');
-        cubeExt.setVisible(false);
+        cubeExt.showTriad(true);
+        //cubeExt.setVisible(false);
 
         viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, (e) => {
             //viewer.setBackgroundColor(60, 60, 60, 60, 60, 60); //fix
@@ -77,16 +79,16 @@ function onDocumentLoadSuccess(doc) {
             viewer.setGroundReflection(false);
             viewer.setProgressiveRendering(true);
 
-            disableEventsEvents();
+            //disableEventsEvents();
             zoomCamera();
-            initGame;
+            initGame();
         });
     });
 }
 
 function zoomCamera() {
     let camera = viewer.navigation.getCamera();
-    camera.zoom = 1.25;
+    camera.zoom = 1.15;
     viewer.navigation.updateCamera();
 }
 
