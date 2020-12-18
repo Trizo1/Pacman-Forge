@@ -18,10 +18,12 @@ function drawFrontFace() {
     }
 
     const wallmaterial = new THREE.MeshBasicMaterial({ color: '#0033CC' });
+
     let tempFigure = [];
     for (let i = 0; i < 34; i++) {
         for (let j = 0; j < 34; j++) {
             if (FRONT_LEVEL[i][j] == 2 && FRONT_LEVEL[i][j] != checkedCells[i][j]) {
+
                 checkedCells[i][j] = 2;
 
                 tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
@@ -31,26 +33,36 @@ function drawFrontFace() {
 
                 follow('left', i, j, tempFigure, checkedCells);
                 follow('right', i, j, tempFigure, checkedCells);
+                // follow('down', i, j, tempFigure, checkedCells);
+
+                let figure = truncateFigure(tempFigure);
+                // console.log(tempFigure);
+                tempFigure = [];
+                // console.log(figure); 
+                let shape = drawPath(figure);
+                console.log(shape);
+
+                var data = {
+                    steps: 1,
+                    amount: DEPTH,
+                    // bevelEnabled: true,
+                    // bevelThickness: 1,
+                    // bevelSize: 1,
+                    // bevelSegments: 1
+                };
+
+                var geometry = new THREE.ExtrudeGeometry(shape, data);
+                var wall = new THREE.Mesh(geometry, wallmaterial);
+                // break;
+                // const wall = new THREE.BoxGeometry(CELL_SIZE, CELL_SIZE, DEPTH);
+                // let wall = new THREE.Mesh(wall, wallmaterial);
+                wall.position.set(0, 0, CUBE_SIZE);
+                NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
+                // mesh.push(wall);
+
             }
         }
     }
-    let figure = truncateFigure(tempFigure);
-    tempFigure = [];
-    let shape = drawPath(figure);
-    console.log(shape);
-
-    var settings = {
-        steps: 1,
-        amount: DEPTH
-    };
-
-    var geometry = new THREE.ExtrudeGeometry(shape, settings);
-    var wall = new THREE.Mesh(geometry, wallmaterial);
-    // break;
-    // const wall = new THREE.BoxGeometry(CELL_SIZE, CELL_SIZE, DEPTH);
-    // let wall = new THREE.Mesh(wall, wallmaterial);
-    wall.position.set(0, 0, CUBE_SIZE);
-    NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
 }
 
 function drawPath(figure) {
@@ -80,16 +92,6 @@ function checkPath(head, figure, shape) {
         shape.lineTo(rightWs.x, rightWs.y);
         checkPath(rightWs, figure, shape);
     }
-    else if (typeof downCs != 'undefined') {
-        figure.splice(figure.indexOf(downCs), 1);
-        shape.lineTo(downCs.x, downCs.y);
-        checkPath(downCs, figure, shape);
-    }
-    else if (typeof downWs != 'undefined') {
-        figure.splice(figure.indexOf(downWs), 1);
-        shape.lineTo(downWs.x, downWs.y);
-        checkPath(downWs, figure, shape);
-    }
     else if (typeof leftCs != 'undefined') {
         figure.splice(figure.indexOf(leftCs), 1);
         shape.lineTo(leftCs.x, leftCs.y);
@@ -99,6 +101,16 @@ function checkPath(head, figure, shape) {
         figure.splice(figure.indexOf(leftWs), 1);
         shape.lineTo(leftWs.x, leftWs.y);
         checkPath(leftWs, figure, shape);
+    }
+    else if (typeof downCs != 'undefined') {
+        figure.splice(figure.indexOf(downCs), 1);
+        shape.lineTo(downCs.x, downCs.y);
+        checkPath(downCs, figure, shape);
+    }
+    else if (typeof downWs != 'undefined') {
+        figure.splice(figure.indexOf(downWs), 1);
+        shape.lineTo(downWs.x, downWs.y);
+        checkPath(downWs, figure, shape);
     }
     else if (typeof topCs != 'undefined') {
         figure.splice(figure.indexOf(topCs), 1);
@@ -111,6 +123,8 @@ function checkPath(head, figure, shape) {
         checkPath(topWs, figure, shape);
     }
 }
+
+
 
 function truncateFigure(tempFigure) {
     let figure = [];
@@ -130,6 +144,7 @@ function truncateFigure(tempFigure) {
             ++count;
 
         // console.log(count);
+
         if (count < 4)
             figure.push(tempFigure[i]);
 
