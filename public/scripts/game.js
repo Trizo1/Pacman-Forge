@@ -1,5 +1,5 @@
 import { FRONT_LEVEL, OBJECT_TYPE, CELL_SIZE, DEPTH, CUBE_SIZE } from './setup.js';
-const WALL_SIZE = 8;
+const WALL_SIZE = 5;
 
 let mesh = [];
 export function initGame() {
@@ -45,10 +45,6 @@ function drawFrontFace() {
                 var data = {
                     steps: 1,
                     amount: DEPTH,
-                    // bevelEnabled: true,
-                    // bevelThickness: 1,
-                    // bevelSize: 1,
-                    // bevelSegments: 1
                 };
 
                 var geometry = new THREE.ExtrudeGeometry(shape, data);
@@ -92,16 +88,6 @@ function checkPath(head, figure, shape) {
         shape.lineTo(rightWs.x, rightWs.y);
         checkPath(rightWs, figure, shape);
     }
-    else if (typeof leftCs != 'undefined') {
-        figure.splice(figure.indexOf(leftCs), 1);
-        shape.lineTo(leftCs.x, leftCs.y);
-        checkPath(leftCs, figure, shape);
-    }
-    else if (typeof leftWs != 'undefined') {
-        figure.splice(figure.indexOf(leftWs), 1);
-        shape.lineTo(leftWs.x, leftWs.y);
-        checkPath(leftWs, figure, shape);
-    }
     else if (typeof downCs != 'undefined') {
         figure.splice(figure.indexOf(downCs), 1);
         shape.lineTo(downCs.x, downCs.y);
@@ -111,6 +97,16 @@ function checkPath(head, figure, shape) {
         figure.splice(figure.indexOf(downWs), 1);
         shape.lineTo(downWs.x, downWs.y);
         checkPath(downWs, figure, shape);
+    }
+    else if (typeof leftCs != 'undefined') {
+        figure.splice(figure.indexOf(leftCs), 1);
+        shape.lineTo(leftCs.x, leftCs.y);
+        checkPath(leftCs, figure, shape);
+    }
+    else if (typeof leftWs != 'undefined') {
+        figure.splice(figure.indexOf(leftWs), 1);
+        shape.lineTo(leftWs.x, leftWs.y);
+        checkPath(leftWs, figure, shape);
     }
     else if (typeof topCs != 'undefined') {
         figure.splice(figure.indexOf(topCs), 1);
@@ -142,16 +138,21 @@ function truncateFigure(tempFigure) {
         if (tempFigure.some(item => item.x == tempFigure[i].x - (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y)
             || tempFigure.some(item => item.x == tempFigure[i].x - (WALL_SIZE) && item.y == tempFigure[i].y))
             ++count;
+        if (tempFigure.some(item => item.x == tempFigure[i].x - (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y + (CELL_SIZE - WALL_SIZE))
+            || tempFigure.some(item => item.x == tempFigure[i].x + (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y + (CELL_SIZE - WALL_SIZE))
+            || tempFigure.some(item => item.x == tempFigure[i].x + (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y - (CELL_SIZE - WALL_SIZE))
+            || tempFigure.some(item => item.x == tempFigure[i].x - (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y - (CELL_SIZE - WALL_SIZE)))
+            ++count;
 
-        // console.log(count);
-
-        if (count < 4)
+        if (count < 5)
             figure.push(tempFigure[i]);
 
     }
     // figure.forEach(element => {
     //     console.log(element);
     // });
+    console.log(tempFigure);
+    console.log(figure);
     return figure;
 }
 
@@ -160,6 +161,7 @@ function truncateFigure(tempFigure) {
 function follow(type, i, j, tempFigure, checkedCells) {
     if (FRONT_LEVEL[i][j] != 0) {
         if (type == "right") {
+            // console.log(i, j);
             if (FRONT_LEVEL[i][j + 1] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i][j + 1] != checkedCells[i][j + 1]) {
                 tempFigure.push({ x: (j + 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
                 tempFigure.push({ x: (j + 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
@@ -171,7 +173,8 @@ function follow(type, i, j, tempFigure, checkedCells) {
             }
             else follow("down", i, j, tempFigure, checkedCells);
         }
-        if (type == "down") {
+        if (type == "down" && i < 33) {
+            // console.log(i, j);
             if (FRONT_LEVEL[i + 1][j] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i + 1][j] != checkedCells[i + 1][j]) {
                 tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i + 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
                 tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i + 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
@@ -185,6 +188,7 @@ function follow(type, i, j, tempFigure, checkedCells) {
             }
         }
         if (type == "left") {
+            // console.log(i, j);
             if (FRONT_LEVEL[i][j - 1] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i][j - 1] != checkedCells[i][j - 1]) {
                 tempFigure.push({ x: (j - 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
                 tempFigure.push({ x: (j - 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
