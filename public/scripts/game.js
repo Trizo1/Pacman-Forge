@@ -1,5 +1,5 @@
 import { FRONT_LEVEL, OBJECT_TYPE, CELL_SIZE, DEPTH, CUBE_SIZE } from './setup.js';
-const WALL_SIZE = 5;
+const WALL_SIZE = 3;
 
 let mesh = [];
 export function initGame() {
@@ -17,7 +17,7 @@ function drawFrontFace() {
         checkedCells[i] = [];
     }
 
-    const wallmaterial = new THREE.MeshBasicMaterial({ color: '#0033CC' });
+    const wallmaterial = new THREE.MeshBasicMaterial({ color: '#00cc69' });
 
     let tempFigure = [];
     for (let i = 0; i < 34; i++) {
@@ -171,7 +171,10 @@ function follow(type, i, j, tempFigure, checkedCells) {
                 follow("right", i, j + 1, tempFigure, checkedCells);
 
             }
-            else follow("down", i, j, tempFigure, checkedCells);
+            else {
+                follow("down", i, j, tempFigure, checkedCells);
+                // follow("top", i, j, tempFigure, checkedCells);
+            }
         }
         if (type == "down" && i < 33) {
             // console.log(i, j);
@@ -187,6 +190,20 @@ function follow(type, i, j, tempFigure, checkedCells) {
 
             }
         }
+        // if (type == "top" && i > 0) {
+        //     // console.log(i, j);
+        //     if (FRONT_LEVEL[i - 1][j] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i - 1][j] != checkedCells[i - 1][j]) {
+        //         tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i - 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
+        //         tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i - 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
+        //         tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i - 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // right bottom
+        //         tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i - 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // left bottom
+        //         checkedCells[i - 1][j] = FRONT_LEVEL[i - 1][j];
+        //         follow("top", i - 1, j, tempFigure, checkedCells);
+        //         follow('left', i - 1, j, tempFigure, checkedCells);
+        //         follow('right', i - 1, j, tempFigure, checkedCells);
+
+        //     }
+        // }
         if (type == "left") {
             // console.log(i, j);
             if (FRONT_LEVEL[i][j - 1] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i][j - 1] != checkedCells[i][j - 1]) {
@@ -198,8 +215,13 @@ function follow(type, i, j, tempFigure, checkedCells) {
                 follow("left", i, j - 1, tempFigure, checkedCells);
 
             }
-            else follow("down", i, j, tempFigure, checkedCells);
+            else {
+                follow("down", i, j, tempFigure, checkedCells);
+                // follow("top", i, j, tempFigure, checkedCells);
+            }
         }
+
+
     }
 
 }
