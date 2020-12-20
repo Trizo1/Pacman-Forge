@@ -40,6 +40,7 @@ function drawLevel(level) {
                         let geometry = new THREE.ExtrudeGeometry(shape, settings);
                         let wall = new THREE.Mesh(geometry, wallmaterial);
                         wall.position.set(level.offsetX, level.offsetY, level.offsetZ);
+                        wall.rotation.x = level.rotationX;
                         NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
                     }
                     break;
