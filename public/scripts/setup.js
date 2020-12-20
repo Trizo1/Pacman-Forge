@@ -83,5 +83,5 @@ const FRONT_LEVEL = [
 ];
 
 export const LEVELS = [
-    FRONT_LEVEL,
+    { grid: FRONT_LEVEL, offsetX: 0, offsetY: 0, offsetZ: CUBE_SIZE },
 ];

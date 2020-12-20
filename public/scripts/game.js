@@ -13,7 +13,7 @@ function drawLevels() {
     }
 }
 
-function drawLevel(levelGrid) {
+function drawLevel(level) {
     let checkedCells = [];
     clearCheckedCells(checkedCells);
 
@@ -22,26 +22,24 @@ function drawLevel(levelGrid) {
 
     for (let i = 0; i < 34; i++) {
         for (let j = 0; j < 34; j++) {
-            switch (OBJECT_LIST[levelGrid[i][j]]) {
+            switch (OBJECT_LIST[level.grid[i][j]]) {
                 case OBJECT_TYPE.WALL:
-                    if (levelGrid[i][j] != checkedCells[i][j]) {
+                    if (level.grid[i][j] != checkedCells[i][j]) {
                         checkedCells[i][j] = 2;
                         tempFigureAdd(tempFigure, i, j);
-                        follow(levelGrid, "left", i, j, tempFigure, checkedCells);
-                        follow(levelGrid, "right", i, j, tempFigure, checkedCells);
+                        follow(level.grid, "left", i, j, tempFigure, checkedCells);
+                        follow(level.grid, "right", i, j, tempFigure, checkedCells);
 
                         let figure = truncateFigure(tempFigure);
                         tempFigure = [];
                         let shape = drawPath(figure);
-
-                        let data = {
+                        let settings = {
                             steps: 1,
                             amount: DEPTH,
                         };
-
-                        let geometry = new THREE.ExtrudeGeometry(shape, data);
+                        let geometry = new THREE.ExtrudeGeometry(shape, settings);
                         let wall = new THREE.Mesh(geometry, wallmaterial);
-                        wall.position.set(0, 0, CUBE_SIZE);
+                        wall.position.set(level.offsetX, level.offsetY, level.offsetZ);
                         NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
                     }
                     break;
