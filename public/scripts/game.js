@@ -1,63 +1,65 @@
-import { FRONT_LEVEL, OBJECT_TYPE, CELL_SIZE, DEPTH, CUBE_SIZE } from './setup.js';
-const WALL_SIZE = 3;
+import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVELS } from './setup.js';
 
-let mesh = [];
 export function initGame() {
-    drawFrontFace();
+    drawLevels();
     NOP_VIEWER.impl.invalidate(true);
 }
-
-function drawFrontFace() {
+function drawLevels() {
     if (!NOP_VIEWER.overlays.hasScene('custom-scene')) {
         NOP_VIEWER.overlays.addScene('custom-scene');
     }
-
-    let checkedCells = [];
-    for (let i = 0; i < 34; i++) {
-        checkedCells[i] = [];
+    for (let level of LEVELS) {
+        drawLevel(level);
     }
+}
+
+function drawLevel(levelGrid) {
+    let checkedCells = [];
+    clearCheckedCells(checkedCells);
 
     const wallmaterial = new THREE.MeshBasicMaterial({ color: '#00cc69' });
-
     let tempFigure = [];
+
     for (let i = 0; i < 34; i++) {
         for (let j = 0; j < 34; j++) {
-            if (FRONT_LEVEL[i][j] == 2 && FRONT_LEVEL[i][j] != checkedCells[i][j]) {
+            switch (OBJECT_LIST[levelGrid[i][j]]) {
+                case OBJECT_TYPE.WALL:
+                    if (levelGrid[i][j] != checkedCells[i][j]) {
+                        checkedCells[i][j] = 2;
+                        tempFigureAdd(tempFigure, i, j);
+                        follow(levelGrid, "left", i, j, tempFigure, checkedCells);
+                        follow(levelGrid, "right", i, j, tempFigure, checkedCells);
 
-                checkedCells[i][j] = 2;
+                        let figure = truncateFigure(tempFigure);
+                        tempFigure = [];
+                        let shape = drawPath(figure);
 
-                tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
-                tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
-                tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // right bottom
-                tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // left bottom
+                        let data = {
+                            steps: 1,
+                            amount: DEPTH,
+                        };
 
-                follow('left', i, j, tempFigure, checkedCells);
-                follow('right', i, j, tempFigure, checkedCells);
-                // follow('down', i, j, tempFigure, checkedCells);
-
-                let figure = truncateFigure(tempFigure);
-                // console.log(tempFigure);
-                tempFigure = [];
-                // console.log(figure); 
-                let shape = drawPath(figure);
-                console.log(shape);
-
-                var data = {
-                    steps: 1,
-                    amount: DEPTH,
-                };
-
-                var geometry = new THREE.ExtrudeGeometry(shape, data);
-                var wall = new THREE.Mesh(geometry, wallmaterial);
-                // break;
-                // const wall = new THREE.BoxGeometry(CELL_SIZE, CELL_SIZE, DEPTH);
-                // let wall = new THREE.Mesh(wall, wallmaterial);
-                wall.position.set(0, 0, CUBE_SIZE);
-                NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
-                // mesh.push(wall);
-
+                        let geometry = new THREE.ExtrudeGeometry(shape, data);
+                        let wall = new THREE.Mesh(geometry, wallmaterial);
+                        wall.position.set(0, 0, CUBE_SIZE);
+                        NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
+                    }
+                    break;
             }
         }
+    }
+}
+
+function tempFigureAdd(tempFigure, i, j) {
+    tempFigure.push({ x: (j) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
+    tempFigure.push({ x: (j) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
+    tempFigure.push({ x: (j) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // right bottom
+    tempFigure.push({ x: (j) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // left bottom
+}
+
+function clearCheckedCells(checkedCells) {
+    for (let i = 0; i < 34; i++) {
+        checkedCells[i] = [];
     }
 }
 
@@ -70,162 +72,106 @@ function drawPath(figure) {
 }
 
 function checkPath(head, figure, shape) {
-    let topCs = figure.find(item => item.x == head.x && item.y == head.y + (CELL_SIZE - WALL_SIZE));
-    let topWs = figure.find(item => item.x == head.x && item.y == head.y + (WALL_SIZE));
-    let rightCs = figure.find(item => item.x == head.x + (CELL_SIZE - WALL_SIZE) && item.y == head.y);
-    let rightWs = figure.find(item => item.x == head.x + (WALL_SIZE) && item.y == head.y);
-    let leftCs = figure.find(item => item.x == head.x - (CELL_SIZE - WALL_SIZE) && item.y == head.y);
-    let leftWs = figure.find(item => item.x == head.x - (WALL_SIZE) && item.y == head.y);
-    let downCs = figure.find(item => item.x == head.x && item.y == head.y - (CELL_SIZE - WALL_SIZE));
-    let downWs = figure.find(item => item.x == head.x && item.y == head.y - (WALL_SIZE));
-    if (typeof rightCs != 'undefined') {
-        figure.splice(figure.indexOf(rightCs), 1);
-        shape.lineTo(rightCs.x, rightCs.y);
-        checkPath(rightCs, figure, shape);
-    }
-    else if (typeof rightWs != 'undefined') {
-        figure.splice(figure.indexOf(rightWs), 1);
-        shape.lineTo(rightWs.x, rightWs.y);
-        checkPath(rightWs, figure, shape);
-    }
-    else if (typeof downCs != 'undefined') {
-        figure.splice(figure.indexOf(downCs), 1);
-        shape.lineTo(downCs.x, downCs.y);
-        checkPath(downCs, figure, shape);
-    }
-    else if (typeof downWs != 'undefined') {
-        figure.splice(figure.indexOf(downWs), 1);
-        shape.lineTo(downWs.x, downWs.y);
-        checkPath(downWs, figure, shape);
-    }
-    else if (typeof leftCs != 'undefined') {
-        figure.splice(figure.indexOf(leftCs), 1);
-        shape.lineTo(leftCs.x, leftCs.y);
-        checkPath(leftCs, figure, shape);
-    }
-    else if (typeof leftWs != 'undefined') {
-        figure.splice(figure.indexOf(leftWs), 1);
-        shape.lineTo(leftWs.x, leftWs.y);
-        checkPath(leftWs, figure, shape);
-    }
-    else if (typeof topCs != 'undefined') {
-        figure.splice(figure.indexOf(topCs), 1);
-        shape.lineTo(topCs.x, topCs.y);
-        checkPath(topCs, figure, shape);
-    }
-    else if (typeof topWs != 'undefined') {
-        figure.splice(figure.indexOf(topWs), 1);
-        shape.lineTo(topWs.x, topWs.y);
-        checkPath(topWs, figure, shape);
+    let topCs = findPointAround(head.x, head.y + (CELL_SIZE - WALL_SIZE), figure);
+    let topWs = findPointAround(head.x, head.y + (WALL_SIZE), figure);
+    let rightCs = findPointAround(head.x + (CELL_SIZE - WALL_SIZE), head.y, figure);
+    let rightWs = findPointAround(head.x + (WALL_SIZE), head.y, figure);
+    let leftCs = findPointAround(head.x - (CELL_SIZE - WALL_SIZE), head.y, figure);
+    let leftWs = findPointAround(head.x - (WALL_SIZE), head.y, figure);
+    let downCs = findPointAround(head.x, head.y - (CELL_SIZE - WALL_SIZE), figure);
+    let downWs = findPointAround(head.x, head.y - (WALL_SIZE), figure);
+
+    let pointsAround = [rightCs, rightWs, downCs, downWs, leftCs, leftWs, topCs, topWs];
+    for (let item of pointsAround) {
+        if (typeof item != 'undefined') {
+            figure.splice(figure.indexOf(item), 1);
+            shape.lineTo(item.x, item.y);
+            checkPath(item, figure, shape);
+            break;
+        }
     }
 }
 
-
+function findPointAround(x, y, figure) {
+    return figure.find(item => item.x == x && item.y == y);
+}
 
 function truncateFigure(tempFigure) {
     let figure = [];
     for (let i = 0; i < tempFigure.length; i++) {
         let count = 0;
-        if (tempFigure.some(item => item.x == tempFigure[i].x && item.y == tempFigure[i].y + (CELL_SIZE - WALL_SIZE))
-            || tempFigure.some(item => item.x == tempFigure[i].x && item.y == tempFigure[i].y + (WALL_SIZE)))
-            ++count;
-        if (tempFigure.some(item => item.x == tempFigure[i].x && item.y == tempFigure[i].y - (CELL_SIZE - WALL_SIZE))
-            || tempFigure.some(item => item.x == tempFigure[i].x && item.y == tempFigure[i].y - (WALL_SIZE)))
-            ++count;
-        if (tempFigure.some(item => item.x == tempFigure[i].x + (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y)
-            || tempFigure.some(item => item.x == tempFigure[i].x + (WALL_SIZE) && item.y == tempFigure[i].y))
-            ++count;
-        if (tempFigure.some(item => item.x == tempFigure[i].x - (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y)
-            || tempFigure.some(item => item.x == tempFigure[i].x - (WALL_SIZE) && item.y == tempFigure[i].y))
-            ++count;
-        if (tempFigure.some(item => item.x == tempFigure[i].x - (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y + (CELL_SIZE - WALL_SIZE))
-            || tempFigure.some(item => item.x == tempFigure[i].x + (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y + (CELL_SIZE - WALL_SIZE))
-            || tempFigure.some(item => item.x == tempFigure[i].x + (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y - (CELL_SIZE - WALL_SIZE))
-            || tempFigure.some(item => item.x == tempFigure[i].x - (CELL_SIZE - WALL_SIZE) && item.y == tempFigure[i].y - (CELL_SIZE - WALL_SIZE)))
-            ++count;
-
+        let point = tempFigure[i];
+        if (checkPointToSkip(tempFigure, point.x, point.y + (CELL_SIZE - WALL_SIZE))
+            || checkPointToSkip(tempFigure, point.x, point.y + (WALL_SIZE)))
+            count++;
+        if (checkPointToSkip(tempFigure, point.x, point.y - (CELL_SIZE - WALL_SIZE))
+            || checkPointToSkip(tempFigure, point.x, point.y - (WALL_SIZE)))
+            count++;
+        if (checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y)
+            || checkPointToSkip(tempFigure, point.x + (WALL_SIZE), point.y))
+            count++;
+        if (checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y)
+            || checkPointToSkip(tempFigure, point.x - (WALL_SIZE), point.y))
+            count++;
+        if (checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y + (CELL_SIZE - WALL_SIZE))
+            || checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y + (CELL_SIZE - WALL_SIZE))
+            || checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y - (CELL_SIZE - WALL_SIZE))
+            || checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y - (CELL_SIZE - WALL_SIZE)))
+            count++;
         if (count < 5)
             figure.push(tempFigure[i]);
-
     }
-    // figure.forEach(element => {
-    //     console.log(element);
-    // });
-    console.log(tempFigure);
-    console.log(figure);
     return figure;
 }
 
-
-
-function follow(type, i, j, tempFigure, checkedCells) {
-    if (FRONT_LEVEL[i][j] != 0) {
-        if (type == "right") {
-            // console.log(i, j);
-            if (FRONT_LEVEL[i][j + 1] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i][j + 1] != checkedCells[i][j + 1]) {
-                tempFigure.push({ x: (j + 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
-                tempFigure.push({ x: (j + 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
-                tempFigure.push({ x: (j + 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // right bottom
-                tempFigure.push({ x: (j + 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // left bottom
-                checkedCells[i][j + 1] = FRONT_LEVEL[i][j + 1];
-                follow("right", i, j + 1, tempFigure, checkedCells);
-
-            }
-            else {
-                follow("down", i, j, tempFigure, checkedCells);
-                // follow("top", i, j, tempFigure, checkedCells);
-            }
-        }
-        if (type == "down" && i < 33) {
-            // console.log(i, j);
-            if (FRONT_LEVEL[i + 1][j] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i + 1][j] != checkedCells[i + 1][j]) {
-                tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i + 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
-                tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i + 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
-                tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i + 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // right bottom
-                tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i + 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // left bottom
-                checkedCells[i + 1][j] = FRONT_LEVEL[i + 1][j];
-                follow("down", i + 1, j, tempFigure, checkedCells);
-                follow('left', i + 1, j, tempFigure, checkedCells);
-                follow('right', i + 1, j, tempFigure, checkedCells);
-
-            }
-        }
-        // if (type == "top" && i > 0) {
-        //     // console.log(i, j);
-        //     if (FRONT_LEVEL[i - 1][j] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i - 1][j] != checkedCells[i - 1][j]) {
-        //         tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i - 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
-        //         tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i - 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
-        //         tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -(i - 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // right bottom
-        //         tempFigure.push({ x: j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -(i - 1) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // left bottom
-        //         checkedCells[i - 1][j] = FRONT_LEVEL[i - 1][j];
-        //         follow("top", i - 1, j, tempFigure, checkedCells);
-        //         follow('left', i - 1, j, tempFigure, checkedCells);
-        //         follow('right', i - 1, j, tempFigure, checkedCells);
-
-        //     }
-        // }
-        if (type == "left") {
-            // console.log(i, j);
-            if (FRONT_LEVEL[i][j - 1] == FRONT_LEVEL[i][j] && FRONT_LEVEL[i][j - 1] != checkedCells[i][j - 1]) {
-                tempFigure.push({ x: (j - 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // left top
-                tempFigure.push({ x: (j - 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2 }); // right top
-                tempFigure.push({ x: (j - 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) + WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // right bottom
-                tempFigure.push({ x: (j - 1) * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2, y: -i * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2) - WALL_SIZE / 2 }); // left bottom
-                checkedCells[i][j - 1] = FRONT_LEVEL[i][j - 1];
-                follow("left", i, j - 1, tempFigure, checkedCells);
-
-            }
-            else {
-                follow("down", i, j, tempFigure, checkedCells);
-                // follow("top", i, j, tempFigure, checkedCells);
-            }
-        }
-
-
-    }
-
+function checkPointToSkip(tempFigure, x, y) {
+    return tempFigure.some(item => item.x == x && item.y == y);
 }
 
+function follow(levelGrid, type, i, j, tempFigure, checkedCells) {
+    if (levelGrid[i][j] != 0) {
+        if (type == "right") {
+            if (levelGrid[i][j + 1] == levelGrid[i][j] && levelGrid[i][j + 1] != checkedCells[i][j + 1]) {
+                tempFigureAdd(tempFigure, i, j + 1);
+                checkedCells[i][j + 1] = levelGrid[i][j + 1];
+                follow(levelGrid, "right", i, j + 1, tempFigure, checkedCells);
+            }
+            else
+                follow(levelGrid, "down", i, j, tempFigure, checkedCells);
+        }
+        if (type == "down" && i < 33) {
+            if (levelGrid[i + 1][j] == levelGrid[i][j] && levelGrid[i + 1][j] != checkedCells[i + 1][j]) {
+                tempFigureAdd(tempFigure, i + 1, j);
+                checkedCells[i + 1][j] = levelGrid[i + 1][j];
+                follow(levelGrid, "down", i + 1, j, tempFigure, checkedCells);
+                follow(levelGrid, "left", i + 1, j, tempFigure, checkedCells);
+                follow(levelGrid, "right", i + 1, j, tempFigure, checkedCells);
+            }
+        }
+        if (type == "left") {
+            if (levelGrid[i][j - 1] == levelGrid[i][j] && levelGrid[i][j - 1] != checkedCells[i][j - 1]) {
+                tempFigureAdd(tempFigure, i, j - 1);
+                checkedCells[i][j - 1] = levelGrid[i][j - 1];
+                follow(levelGrid, "left", i, j - 1, tempFigure, checkedCells);
+            }
+            else
+                follow(levelGrid, "down", i, j, tempFigure, checkedCells);
+        }
+        /* if (type == "top" && i > 0) {
+            if (levelGrid[i - 1][j] == levelGrid[i][j] && levelGrid[i - 1][j] != checkedCells[i - 1][j]) {
+                tempFigureAdd(tempFigure, i - 1, j);
+                checkedCells[i - 1][j] = levelGrid[i - 1][j];
+                follow(levelGrid, "top", i - 1, j, tempFigure, checkedCells);
+                follow(levelGrid, "left", i - 1, j, tempFigure, checkedCells);
+                follow(levelGrid, "right", i - 1, j, tempFigure, checkedCells);
+            }
+        } */
+    }
+}
+
+
+
+//PREVIOUS PROJECT
 let sphere;
 let keysQ = [];
 var direction = new THREE.Vector3(0, 1, 0);
