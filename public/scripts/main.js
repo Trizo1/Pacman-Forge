@@ -58,6 +58,12 @@ function launchViewer() {
                 });
             }
             viewer.impl.invalidate(true);
+            viewer.setOptimizeNavigation(true);
+            viewer.setQualityLevel(true, true);
+            viewer.setProgressiveRendering(false);
+
+            viewer.setLightPreset(6); //4,6,9
+            viewer.setBackgroundColor(0, 0, 0, 0, 0, 0);
         });
         Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
     });
@@ -88,7 +94,7 @@ function onDocumentLoadSuccess(doc) {
 
 function zoomCamera() {
     let camera = viewer.navigation.getCamera();
-    camera.zoom = 1.15;
+    camera.zoom = 1.1;
     viewer.navigation.updateCamera();
 }
 

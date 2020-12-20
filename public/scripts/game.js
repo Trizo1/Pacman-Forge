@@ -10,6 +10,7 @@ function drawLevels() {
     }
     for (let level of LEVELS) {
         drawLevel(level);
+        NOP_VIEWER.impl.invalidate(true);
     }
 }
 
@@ -17,7 +18,7 @@ function drawLevel(level) {
     let checkedCells = [];
     clearCheckedCells(checkedCells);
 
-    const wallmaterial = new THREE.MeshBasicMaterial({ color: '#00cc69' });
+    const wallmaterial = new THREE.MeshLambertMaterial({ color: level.color, });
     let tempFigure = [];
 
     for (let i = 0; i < 34; i++) {
@@ -33,14 +34,15 @@ function drawLevel(level) {
                         let figure = truncateFigure(tempFigure);
                         tempFigure = [];
                         let shape = drawPath(figure);
-                        let settings = {
+                        let extrudeSettings = {
                             steps: 1,
                             amount: DEPTH,
+                            bevelEnabled: false,
                         };
-                        let geometry = new THREE.ExtrudeGeometry(shape, settings);
+                        let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
                         let wall = new THREE.Mesh(geometry, wallmaterial);
                         wall.position.set(level.offsetX, level.offsetY, level.offsetZ);
-                        wall.rotation.x = level.rotationX;
+                        wall.rotation.setFromVector3(new THREE.Vector3(level.rotationX, level.rotationY, level.rotationZ));
                         NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
                     }
                     break;
