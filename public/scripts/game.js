@@ -47,10 +47,9 @@ function drawLevel(level) {
                     }
                     break;
                 case OBJECT_TYPE.PACMAN:
-                    console.log(i, j);
                     const geometry = new THREE.SphereGeometry(CELL_SIZE - 8, 32, 32);
                     const pacman = new THREE.Mesh(geometry, pacmanMaterial);
-                    pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ);
+                    pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + CELL_SIZE - 8);
                     NOP_VIEWER.overlays.addMesh(pacman, 'custom-scene');
                     break;
             }
