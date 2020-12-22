@@ -15,6 +15,7 @@ function drawLevels() {
 }
 
 function drawLevel(level) {
+    let pacman;
     let checkedCells = [];
     clearCheckedCells(checkedCells);
 
@@ -48,13 +49,32 @@ function drawLevel(level) {
                     break;
                 case OBJECT_TYPE.PACMAN:
                     const geometry = new THREE.SphereGeometry(CELL_SIZE - 8, 32, 32);
-                    const pacman = new THREE.Mesh(geometry, pacmanMaterial);
+                    pacman = new THREE.Mesh(geometry, pacmanMaterial);
                     pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + CELL_SIZE - 8);
                     NOP_VIEWER.overlays.addMesh(pacman, 'custom-scene');
+                    var position2 = new THREE.Vector3(1100, 1200, 0);
+                    setupObjectPositionTween(pacman, pacman.position.clone(), position2, 5000, 3000, TWEEN.Easing.Linear.None);
+                    animate();
                     break;
             }
         }
     }
+}
+
+const animate = function () {
+    requestAnimationFrame(animate);
+    TWEEN.update();
+    // NOP_VIEWER.impl.invalidate(true);
+    NOP_VIEWER.impl.sceneUpdated(true);
+};
+
+function setupObjectPositionTween(object, source, target, duration, delay, easing) {
+    new TWEEN.Tween(source)
+        .to(target, duration)
+        .delay(delay)
+        .easing(easing)
+        .onUpdate(function () { object.position.copy(source); })
+        .start();
 }
 
 function tempFigureAdd(tempFigure, i, j) {
