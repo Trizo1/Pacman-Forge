@@ -18,9 +18,9 @@ function drawLevel(level) {
     let checkedCells = [];
     clearCheckedCells(checkedCells);
 
-    const wallmaterial = new THREE.MeshLambertMaterial({ color: level.color, });
+    const wallMaterial = new THREE.MeshLambertMaterial({ color: level.color, });
+    const pacmanMaterial = new THREE.MeshLambertMaterial({ color: '#FF1FF8' });
     let tempFigure = [];
-
     for (let i = 0; i < 34; i++) {
         for (let j = 0; j < 34; j++) {
             switch (OBJECT_LIST[level.grid[i][j]]) {
@@ -39,12 +39,19 @@ function drawLevel(level) {
                             amount: DEPTH,
                             bevelEnabled: false,
                         };
-                        let geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-                        let wall = new THREE.Mesh(geometry, wallmaterial);
+                        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                        const wall = new THREE.Mesh(geometry, wallMaterial);
                         wall.position.set(level.offsetX, level.offsetY, level.offsetZ);
                         wall.rotation.setFromVector3(new THREE.Vector3(level.rotationX, level.rotationY, level.rotationZ));
                         NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
                     }
+                    break;
+                case OBJECT_TYPE.PACMAN:
+                    console.log(i, j);
+                    const geometry = new THREE.SphereGeometry(CELL_SIZE - 8, 32, 32);
+                    const pacman = new THREE.Mesh(geometry, pacmanMaterial);
+                    pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ);
+                    NOP_VIEWER.overlays.addMesh(pacman, 'custom-scene');
                     break;
             }
         }

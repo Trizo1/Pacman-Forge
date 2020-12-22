@@ -9,6 +9,7 @@ const documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1
 //dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL0NVQkVfdjAuaXB0
 //dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmUuaXB0
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('321');
     launchViewer();
 });
 
