@@ -89,25 +89,29 @@ function moveTo(x, y) {
             }
         }
     }
-    while (OBJECT_LIST[curLevel.grid[yPacmanCell + y][xPacmanCell + x]] == OBJECT_TYPE.BLANK || OBJECT_LIST[curLevel.grid[yPacmanCell + y][xPacmanCell + x]] == OBJECT_TYPE.DOT) {
-        pacmanMovement.x = x;
-        pacmanMovement.y = y;
-        let positionToMove = pacman.position.clone();
-        console.log(pacman.position.clone());
-        positionToMove = new THREE.Vector3(positionToMove.x + x * CELL_SIZE, positionToMove.y + y * CELL_SIZE, positionToMove.z);
-        console.log(positionToMove);
-        setupObjectPositionTween(pacman, pacman.position.clone(), positionToMove, 0, 5, TWEEN.Easing.Linear.None);
-        //pacman.position.set(positionToMove.x, positionToMove.y, positionToMove.z);
-        movePacman();
-    }
+    let interval = setInterval(() => {
+        if (OBJECT_LIST[curLevel.grid[yPacmanCell + y][xPacmanCell + x]] == OBJECT_TYPE.BLANK || OBJECT_LIST[curLevel.grid[yPacmanCell + y][xPacmanCell + x]] == OBJECT_TYPE.DOT) {
+            pacmanMovement.x = x;
+            pacmanMovement.y = y;
+            let positionToMove = pacman.position.clone();
+            console.log(pacman.position.clone());
+            positionToMove = new THREE.Vector3(positionToMove.x + x * CELL_SIZE, positionToMove.y + y * CELL_SIZE, positionToMove.z);
+            console.log(positionToMove);
+            //setupObjectPositionTween(pacman, pacman.position.clone(), positionToMove, 0, 500, TWEEN.Easing.Linear.None);
+            pacman.position.set(positionToMove.x, positionToMove.y, positionToMove.z);
+            updatePacmanCell();
+            movePacman();
+        } else
+            clearInterval(interval);
+    }, 500);
     //cancelAnimationFrame(pacmanReqMove);
 }
 const movePacman = function () {
     if (!pacmanReqMove)
         pacmanReqMove = requestAnimationFrame(movePacman);
-    TWEEN.update();
+    //TWEEN.update();
     NOP_VIEWER.impl.sceneUpdated(true, false);
-    updatePacmanCell();
+
     //NOP_VIEWER.impl.invalidate(true, false, true); то же самое NOP_VIEWER.impl.sceneUpdated(true, false);
 };
 
