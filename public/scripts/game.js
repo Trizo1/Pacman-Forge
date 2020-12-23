@@ -1,8 +1,16 @@
 import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVELS } from './setup.js';
 
+let pacman;
+let curLevel;
+let xPacmanCell;
+let yPacmanCell;
+let pacmanMovement = { x: 0, y: 0 };
+let pacmanReqMove;
+
 export function initGame() {
+    curLevel = LEVELS[0];
     drawLevels();
-    NOP_VIEWER.impl.invalidate(true);
+    NOP_VIEWER.impl.sceneUpdated(true, false);
 }
 function drawLevels() {
     if (!NOP_VIEWER.overlays.hasScene('custom-scene')) {
@@ -10,15 +18,12 @@ function drawLevels() {
     }
     for (let level of LEVELS) {
         drawLevel(level);
-        NOP_VIEWER.impl.invalidate(true);
     }
 }
 
 function drawLevel(level) {
-    let pacman;
     let checkedCells = [];
     clearCheckedCells(checkedCells);
-
     const wallMaterial = new THREE.MeshLambertMaterial({ color: level.color, });
     const pacmanMaterial = new THREE.MeshLambertMaterial({ color: '#FF1FF8' });
     let tempFigure = [];
@@ -52,28 +57,76 @@ function drawLevel(level) {
                     pacman = new THREE.Mesh(geometry, pacmanMaterial);
                     pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + CELL_SIZE - 8);
                     NOP_VIEWER.overlays.addMesh(pacman, 'custom-scene');
-                    var position2 = new THREE.Vector3(1100, 1200, 0);
-                    setupObjectPositionTween(pacman, pacman.position.clone(), position2, 5000, 3000, TWEEN.Easing.Linear.None);
-                    animate();
+                    document.addEventListener('keydown', pacmanMove);
                     break;
             }
         }
     }
 }
 
-const animate = function () {
-    requestAnimationFrame(animate);
+function pacmanMove(e) {
+    switch (e.keyCode) {
+        case 65: //A
+            moveTo(-1, 0);
+            break;
+        case 68: //D
+            moveTo(1, 0);
+            break;
+        case 87: //W
+            moveTo(0, 1);
+            break;
+        case 83: //S
+            moveTo(0, -1);
+            break;
+    }
+}
+function moveTo(x, y) {
+    for (let i = 0; i < 33; i++) {
+        for (let j = 0; j < 33; j++) {
+            if (OBJECT_LIST[curLevel.grid[i][j]] == OBJECT_TYPE.PACMAN) {
+                xPacmanCell = j;
+                yPacmanCell = i;
+            }
+        }
+    }
+    while (OBJECT_LIST[curLevel.grid[yPacmanCell + y][xPacmanCell + x]] == OBJECT_TYPE.BLANK || OBJECT_LIST[curLevel.grid[yPacmanCell + y][xPacmanCell + x]] == OBJECT_TYPE.DOT) {
+        pacmanMovement.x = x;
+        pacmanMovement.y = y;
+        let positionToMove = pacman.position.clone();
+        console.log(pacman.position.clone());
+        positionToMove = new THREE.Vector3(positionToMove.x + x * CELL_SIZE, positionToMove.y + y * CELL_SIZE, positionToMove.z);
+        console.log(positionToMove);
+        setupObjectPositionTween(pacman, pacman.position.clone(), positionToMove, 0, 5, TWEEN.Easing.Linear.None);
+        //pacman.position.set(positionToMove.x, positionToMove.y, positionToMove.z);
+        movePacman();
+    }
+    //cancelAnimationFrame(pacmanReqMove);
+}
+const movePacman = function () {
+    if (!pacmanReqMove)
+        pacmanReqMove = requestAnimationFrame(movePacman);
     TWEEN.update();
-    // NOP_VIEWER.impl.invalidate(true);
-    NOP_VIEWER.impl.sceneUpdated(true);
+    NOP_VIEWER.impl.sceneUpdated(true, false);
+    updatePacmanCell();
+    //NOP_VIEWER.impl.invalidate(true, false, true); то же самое NOP_VIEWER.impl.sceneUpdated(true, false);
 };
+
+function updatePacmanCell() {
+    curLevel.grid[yPacmanCell][xPacmanCell] = 0;
+    curLevel.grid[yPacmanCell + pacmanMovement.y][xPacmanCell + pacmanMovement.x] = 5;
+    yPacmanCell += pacmanMovement.y;
+    xPacmanCell += pacmanMovement.x;
+    console.log(yPacmanCell, xPacmanCell);
+}
 
 function setupObjectPositionTween(object, source, target, duration, delay, easing) {
     new TWEEN.Tween(source)
         .to(target, duration)
         .delay(delay)
         .easing(easing)
-        .onUpdate(function () { object.position.copy(source); })
+        .onUpdate(function () {
+            object.position.copy(source);
+        })
         .start();
 }
 
@@ -199,7 +252,7 @@ function follow(levelGrid, type, i, j, tempFigure, checkedCells) {
 
 
 //PREVIOUS PROJECT
-let sphere;
+/* let sphere;
 let keysQ = [];
 var direction = new THREE.Vector3(0, 1, 0);
 let reycaster;
@@ -253,5 +306,5 @@ function move() {
         sphere.position.set(newPosition.x, newPosition.y, newPosition.z);
     }
 }
-
+ */
 
