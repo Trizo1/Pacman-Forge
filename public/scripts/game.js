@@ -5,7 +5,11 @@ let curLevel;
 let xPacmanCell;
 let yPacmanCell;
 let pacmanMovement = { x: 0, y: 0 };
+let pacmanMoveInterval
 let pacmanReqMove;
+let pacmanPosToMove;
+const pacmanMoveCounter = 18;
+let pacmanDistanceTo;
 
 export function initGame() {
     curLevel = LEVELS[0];
@@ -67,15 +71,39 @@ function drawLevel(level) {
 function pacmanMove(e) {
     switch (e.keyCode) {
         case 65: //A
+            if (pacmanMoveInterval && pacmanReqMove) {
+                clearInterval(pacmanMoveInterval);
+                cancelAnimationFrame(pacmanReqMove);
+                pacmanReqMove = null;
+                pacmanMoveInterval = null;
+            }
             moveTo(-1, 0);
             break;
         case 68: //D
+            if (pacmanMoveInterval && pacmanReqMove) {
+                clearInterval(pacmanMoveInterval);
+                cancelAnimationFrame(pacmanReqMove);
+                pacmanReqMove = null;
+                pacmanMoveInterval = null;
+            }
             moveTo(1, 0);
             break;
         case 87: //W
+            if (pacmanMoveInterval && pacmanReqMove) {
+                clearInterval(pacmanMoveInterval);
+                cancelAnimationFrame(pacmanReqMove);
+                pacmanReqMove = null;
+                pacmanMoveInterval = null;
+            }
             moveTo(0, 1);
             break;
         case 83: //S
+            if (pacmanMoveInterval && pacmanReqMove) {
+                clearInterval(pacmanMoveInterval);
+                cancelAnimationFrame(pacmanReqMove);
+                pacmanReqMove = null;
+                pacmanMoveInterval = null;
+            }
             moveTo(0, -1);
             break;
     }
@@ -89,36 +117,39 @@ function moveTo(x, y) {
             }
         }
     }
-    let interval = setInterval(() => {
-        if (OBJECT_LIST[curLevel.grid[yPacmanCell + y][xPacmanCell + x]] == OBJECT_TYPE.BLANK || OBJECT_LIST[curLevel.grid[yPacmanCell + y][xPacmanCell + x]] == OBJECT_TYPE.DOT) {
+    pacmanDistanceTo = new THREE.Vector3(0, 0, 0);
+    movePacman();
+    pacmanMoveInterval = setInterval(() => {
+        if (OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.BLANK || OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.DOT) {
             pacmanMovement.x = x;
             pacmanMovement.y = y;
-            let positionToMove = pacman.position.clone();
-            console.log(pacman.position.clone());
-            positionToMove = new THREE.Vector3(positionToMove.x + x * CELL_SIZE, positionToMove.y + y * CELL_SIZE, positionToMove.z);
-            console.log(positionToMove);
+            pacmanPosToMove = pacman.position.clone();
+            pacmanPosToMove = new THREE.Vector3(pacmanPosToMove.x + x * CELL_SIZE, pacmanPosToMove.y + y * CELL_SIZE, pacmanPosToMove.z);
+            pacmanDistanceTo = new THREE.Vector3(pacmanPosToMove.x - pacman.position.x, pacmanPosToMove.y - pacman.position.y, pacmanPosToMove.z - pacman.position.z);
+
             //setupObjectPositionTween(pacman, pacman.position.clone(), positionToMove, 0, 500, TWEEN.Easing.Linear.None);
-            pacman.position.set(positionToMove.x, positionToMove.y, positionToMove.z);
             updatePacmanCell();
-            movePacman();
-        } else
-            clearInterval(interval);
-    }, 500);
-    //cancelAnimationFrame(pacmanReqMove);
+        } else {
+            cancelAnimationFrame(pacmanReqMove);
+            clearInterval(pacmanMoveInterval);
+            pacmanReqMove = null;
+            pacmanMoveInterval = null;
+        }
+    }, 300);
 }
 const movePacman = function () {
-    if (!pacmanReqMove)
-        pacmanReqMove = requestAnimationFrame(movePacman);
+    pacmanReqMove = requestAnimationFrame(movePacman);
     //TWEEN.update();
+    pacman.position.set(pacman.position.x + pacmanDistanceTo.x / pacmanMoveCounter, pacman.position.y + pacmanDistanceTo.y / pacmanMoveCounter,
+        pacman.position.z + pacmanDistanceTo.z / pacmanMoveCounter);
     NOP_VIEWER.impl.sceneUpdated(true, false);
-
     //NOP_VIEWER.impl.invalidate(true, false, true); то же самое NOP_VIEWER.impl.sceneUpdated(true, false);
 };
 
 function updatePacmanCell() {
     curLevel.grid[yPacmanCell][xPacmanCell] = 0;
-    curLevel.grid[yPacmanCell + pacmanMovement.y][xPacmanCell + pacmanMovement.x] = 5;
-    yPacmanCell += pacmanMovement.y;
+    curLevel.grid[yPacmanCell - pacmanMovement.y][xPacmanCell + pacmanMovement.x] = 5;
+    yPacmanCell -= pacmanMovement.y;
     xPacmanCell += pacmanMovement.x;
     console.log(yPacmanCell, xPacmanCell);
 }
