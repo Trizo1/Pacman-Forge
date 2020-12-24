@@ -8,7 +8,7 @@ let pacmanMovement = { x: 0, y: 0 };
 let pacmanMoveInterval
 let pacmanReqMove;
 let pacmanPosToMove;
-const pacmanMoveCounter = 18;
+const pacmanMoveCounter = 6;
 let pacmanDistanceTo = new THREE.Vector3(0, 0, 0);;
 
 export function initGame() {
@@ -126,7 +126,6 @@ function pacmanMove(e) {
 }
 function moveTo(x, y) {
     pacmanDistanceTo = new THREE.Vector3(0, 0, 0);
-    movePacman();
     pacmanMoveInterval = setInterval(() => {
         if (OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.BLANK || OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.DOT) {
             pacmanMovement.x = x;
@@ -135,7 +134,7 @@ function moveTo(x, y) {
             pacmanPosToMove = new THREE.Vector3(pacmanPosToMove.x + x * CELL_SIZE, pacmanPosToMove.y + y * CELL_SIZE, pacmanPosToMove.z);
             pacmanDistanceTo = new THREE.Vector3(pacmanPosToMove.x - pacman.position.x, pacmanPosToMove.y - pacman.position.y, pacmanPosToMove.z - pacman.position.z);
 
-            //setupObjectPositionTween(pacman, pacman.position.clone(), positionToMove, 0, 500, TWEEN.Easing.Linear.None);
+            setupObjectPositionTween(pacman, pacman.position.clone(), pacmanPosToMove, 100, 0, TWEEN.Easing.Linear.None);
             updatePacmanCell();
         } else {
             cancelAnimationFrame(pacmanReqMove);
@@ -143,13 +142,14 @@ function moveTo(x, y) {
             pacmanReqMove = null;
             pacmanMoveInterval = null;
         }
-    }, 300);
+    }, 120);
+    movePacman();
 }
 const movePacman = function () {
     pacmanReqMove = requestAnimationFrame(movePacman);
-    //TWEEN.update();
-    pacman.position.set(pacman.position.x + pacmanDistanceTo.x / pacmanMoveCounter, pacman.position.y + pacmanDistanceTo.y / pacmanMoveCounter,
-        pacman.position.z + pacmanDistanceTo.z / pacmanMoveCounter);
+    TWEEN.update();
+    //pacman.position.set(pacman.position.x + pacmanDistanceTo.x / pacmanMoveCounter, pacman.position.y + pacmanDistanceTo.y / pacmanMoveCounter,
+    //pacman.position.z + pacmanDistanceTo.z / pacmanMoveCounter);
     NOP_VIEWER.impl.sceneUpdated(true, false);
     //NOP_VIEWER.impl.invalidate(true, false, true); то же самое NOP_VIEWER.impl.sceneUpdated(true, false);
 };
