@@ -9,7 +9,7 @@ let pacmanMoveInterval
 let pacmanReqMove;
 let pacmanPosToMove;
 const pacmanMoveCounter = 18;
-let pacmanDistanceTo;
+let pacmanDistanceTo = new THREE.Vector3(0, 0, 0);;
 
 export function initGame() {
     curLevel = LEVELS[0];
@@ -57,6 +57,8 @@ function drawLevel(level) {
                     }
                     break;
                 case OBJECT_TYPE.PACMAN:
+                    xPacmanCell = j;
+                    yPacmanCell = i;
                     const geometry = new THREE.SphereGeometry(CELL_SIZE - 8, 32, 32);
                     pacman = new THREE.Mesh(geometry, pacmanMaterial);
                     pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + CELL_SIZE - 8);
@@ -69,8 +71,15 @@ function drawLevel(level) {
 }
 
 function pacmanMove(e) {
+    //надо переделывать отрисовку (movePacman), проверку на события нажатия wasd
+    /* let pacmanPrevPos = pacman.position.clone();
+    let prevCellPos = new THREE.Vector3(curLevel.offsetX + xPacmanCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetY - (yPacmanCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + CELL_SIZE - 8);
+    let nextCellByMovement = { i: yPacmanCell + pacmanMovement.y, j: xPacmanCell + pacmanMovement.x };
+    let nextCellPos = new THREE.Vector3(curLevel.offsetX + nextCellByMovement.j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetY - (nextCellByMovement.i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + CELL_SIZE - 8);
+    console.log(pacmanPrevPos); */
     switch (e.keyCode) {
         case 65: //A
+            //if (pacmanPrevPos.distanceTo(prevCellPos) == 0 || nextCellPos.distanceTo(pacman.position) == 0) {
             if (pacmanMoveInterval && pacmanReqMove) {
                 clearInterval(pacmanMoveInterval);
                 cancelAnimationFrame(pacmanReqMove);
@@ -78,8 +87,10 @@ function pacmanMove(e) {
                 pacmanMoveInterval = null;
             }
             moveTo(-1, 0);
+            //}
             break;
         case 68: //D
+            //if (pacmanPrevPos.distanceTo(prevCellPos) == 0 || nextCellPos.distanceTo(pacman.position) == 0) {
             if (pacmanMoveInterval && pacmanReqMove) {
                 clearInterval(pacmanMoveInterval);
                 cancelAnimationFrame(pacmanReqMove);
@@ -87,8 +98,10 @@ function pacmanMove(e) {
                 pacmanMoveInterval = null;
             }
             moveTo(1, 0);
+            //}
             break;
         case 87: //W
+            //if (pacmanPrevPos.distanceTo(prevCellPos) == 0 || nextCellPos.distanceTo(pacman.position) == 0) {
             if (pacmanMoveInterval && pacmanReqMove) {
                 clearInterval(pacmanMoveInterval);
                 cancelAnimationFrame(pacmanReqMove);
@@ -96,8 +109,10 @@ function pacmanMove(e) {
                 pacmanMoveInterval = null;
             }
             moveTo(0, 1);
+            //}
             break;
         case 83: //S
+            //if (pacmanPrevPos.distanceTo(prevCellPos) == 0 || nextCellPos.distanceTo(pacman.position) == 0) {
             if (pacmanMoveInterval && pacmanReqMove) {
                 clearInterval(pacmanMoveInterval);
                 cancelAnimationFrame(pacmanReqMove);
@@ -105,18 +120,11 @@ function pacmanMove(e) {
                 pacmanMoveInterval = null;
             }
             moveTo(0, -1);
+            //}
             break;
     }
 }
 function moveTo(x, y) {
-    for (let i = 0; i < 33; i++) {
-        for (let j = 0; j < 33; j++) {
-            if (OBJECT_LIST[curLevel.grid[i][j]] == OBJECT_TYPE.PACMAN) {
-                xPacmanCell = j;
-                yPacmanCell = i;
-            }
-        }
-    }
     pacmanDistanceTo = new THREE.Vector3(0, 0, 0);
     movePacman();
     pacmanMoveInterval = setInterval(() => {
