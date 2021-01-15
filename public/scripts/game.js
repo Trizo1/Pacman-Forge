@@ -71,70 +71,72 @@ function drawLevel(level) {
 }
 
 function pacmanMove(e) {
-    //надо переделывать отрисовку (movePacman), проверку на события нажатия wasd
     /* let pacmanPrevPos = pacman.position.clone();
     let prevCellPos = new THREE.Vector3(curLevel.offsetX + xPacmanCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetY - (yPacmanCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + CELL_SIZE - 8);
     let nextCellByMovement = { i: yPacmanCell + pacmanMovement.y, j: xPacmanCell + pacmanMovement.x };
-    let nextCellPos = new THREE.Vector3(curLevel.offsetX + nextCellByMovement.j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetY - (nextCellByMovement.i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + CELL_SIZE - 8);
-    console.log(pacmanPrevPos); */
+    let nextCellPos = new THREE.Vector3(curLevel.offsetX + nextCellByMovement.j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetY - (nextCellByMovement.i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + CELL_SIZE - 8);*/
     switch (e.keyCode) {
         case 65: //A
-            //if (pacmanPrevPos.distanceTo(prevCellPos) == 0 || nextCellPos.distanceTo(pacman.position) == 0) {
-            if (pacmanMoveInterval && pacmanReqMove) {
-                clearInterval(pacmanMoveInterval);
-                cancelAnimationFrame(pacmanReqMove);
-                pacmanReqMove = null;
-                pacmanMoveInterval = null;
+            if (canMove(-1, 0)) {
+                if (pacmanMoveInterval && pacmanReqMove) {
+                    clearInterval(pacmanMoveInterval);
+                    cancelAnimationFrame(pacmanReqMove);
+                    pacmanReqMove = null;
+                    pacmanMoveInterval = null;
+                }
+                moveTo(-1, 0);
             }
-            moveTo(-1, 0);
-            //}
             break;
         case 68: //D
-            //if (pacmanPrevPos.distanceTo(prevCellPos) == 0 || nextCellPos.distanceTo(pacman.position) == 0) {
-            if (pacmanMoveInterval && pacmanReqMove) {
-                clearInterval(pacmanMoveInterval);
-                cancelAnimationFrame(pacmanReqMove);
-                pacmanReqMove = null;
-                pacmanMoveInterval = null;
+            if (canMove(1, 0)) {
+                if (pacmanMoveInterval && pacmanReqMove) {
+                    clearInterval(pacmanMoveInterval);
+                    cancelAnimationFrame(pacmanReqMove);
+                    pacmanReqMove = null;
+                    pacmanMoveInterval = null;
+                }
+                moveTo(1, 0);
             }
-            moveTo(1, 0);
-            //}
             break;
         case 87: //W
-            //if (pacmanPrevPos.distanceTo(prevCellPos) == 0 || nextCellPos.distanceTo(pacman.position) == 0) {
-            if (pacmanMoveInterval && pacmanReqMove) {
-                clearInterval(pacmanMoveInterval);
-                cancelAnimationFrame(pacmanReqMove);
-                pacmanReqMove = null;
-                pacmanMoveInterval = null;
+            if (canMove(0, 1)) {
+                if (pacmanMoveInterval && pacmanReqMove) {
+                    clearInterval(pacmanMoveInterval);
+                    cancelAnimationFrame(pacmanReqMove);
+                    pacmanReqMove = null;
+                    pacmanMoveInterval = null;
+                }
+                moveTo(0, 1);
             }
-            moveTo(0, 1);
-            //}
             break;
         case 83: //S
-            //if (pacmanPrevPos.distanceTo(prevCellPos) == 0 || nextCellPos.distanceTo(pacman.position) == 0) {
-            if (pacmanMoveInterval && pacmanReqMove) {
-                clearInterval(pacmanMoveInterval);
-                cancelAnimationFrame(pacmanReqMove);
-                pacmanReqMove = null;
-                pacmanMoveInterval = null;
+            if (canMove(0, -1)) {
+                if (pacmanMoveInterval && pacmanReqMove) {
+                    clearInterval(pacmanMoveInterval);
+                    cancelAnimationFrame(pacmanReqMove);
+                    pacmanReqMove = null;
+                    pacmanMoveInterval = null;
+                }
+                moveTo(0, -1);
             }
-            moveTo(0, -1);
-            //}
             break;
     }
+}
+function canMove(x, y) {
+    return OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.BLANK ||
+        OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.DOT;
 }
 function moveTo(x, y) {
     pacmanDistanceTo = new THREE.Vector3(0, 0, 0);
     pacmanMoveInterval = setInterval(() => {
-        if (OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.BLANK || OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.DOT) {
+        if (canMove(x, y)) {
             pacmanMovement.x = x;
             pacmanMovement.y = y;
             pacmanPosToMove = pacman.position.clone();
             pacmanPosToMove = new THREE.Vector3(pacmanPosToMove.x + x * CELL_SIZE, pacmanPosToMove.y + y * CELL_SIZE, pacmanPosToMove.z);
             pacmanDistanceTo = new THREE.Vector3(pacmanPosToMove.x - pacman.position.x, pacmanPosToMove.y - pacman.position.y, pacmanPosToMove.z - pacman.position.z);
 
-            setupObjectPositionTween(pacman, pacman.position.clone(), pacmanPosToMove, 100, 0, TWEEN.Easing.Linear.None);
+            setupObjectPositionTween(pacman, pacman.position.clone(), pacmanPosToMove, 150, 0, TWEEN.Easing.Linear.None);
             updatePacmanCell();
         } else {
             cancelAnimationFrame(pacmanReqMove);
@@ -142,7 +144,7 @@ function moveTo(x, y) {
             pacmanReqMove = null;
             pacmanMoveInterval = null;
         }
-    }, 120);
+    }, 170);
     movePacman();
 }
 const movePacman = function () {
