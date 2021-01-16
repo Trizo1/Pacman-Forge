@@ -62,6 +62,7 @@ function drawLevel(level) {
                     const geometry = new THREE.SphereGeometry(CELL_SIZE - 8, 32, 32);
                     pacman = new THREE.Mesh(geometry, pacmanMaterial);
                     pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + CELL_SIZE - 8);
+                    pacman.moveDirection = '';
                     NOP_VIEWER.overlays.addMesh(pacman, 'custom-scene');
                     document.addEventListener('keydown', pacmanMove);
                     break;
@@ -77,46 +78,50 @@ function pacmanMove(e) {
     let nextCellPos = new THREE.Vector3(curLevel.offsetX + nextCellByMovement.j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetY - (nextCellByMovement.i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + CELL_SIZE - 8);*/
     switch (e.keyCode) {
         case 65: //A
-            if (canMove(-1, 0)) {
+            if (canMove(-1, 0) && pacman.moveDirection != "left") {
                 if (pacmanMoveInterval && pacmanReqMove) {
                     clearInterval(pacmanMoveInterval);
                     cancelAnimationFrame(pacmanReqMove);
                     pacmanReqMove = null;
                     pacmanMoveInterval = null;
                 }
+                pacman.moveDirection = "left"
                 moveTo(-1, 0);
             }
             break;
         case 68: //D
-            if (canMove(1, 0)) {
+            if (canMove(1, 0) && pacman.moveDirection != "right") {
                 if (pacmanMoveInterval && pacmanReqMove) {
                     clearInterval(pacmanMoveInterval);
                     cancelAnimationFrame(pacmanReqMove);
                     pacmanReqMove = null;
                     pacmanMoveInterval = null;
                 }
+                pacman.moveDirection = "right"
                 moveTo(1, 0);
             }
             break;
         case 87: //W
-            if (canMove(0, 1)) {
+            if (canMove(0, 1) && pacman.moveDirection != "up") {
                 if (pacmanMoveInterval && pacmanReqMove) {
                     clearInterval(pacmanMoveInterval);
                     cancelAnimationFrame(pacmanReqMove);
                     pacmanReqMove = null;
                     pacmanMoveInterval = null;
                 }
+                pacman.moveDirection = "up";
                 moveTo(0, 1);
             }
             break;
         case 83: //S
-            if (canMove(0, -1)) {
+            if (canMove(0, -1) && pacman.moveDirection != "down") {
                 if (pacmanMoveInterval && pacmanReqMove) {
                     clearInterval(pacmanMoveInterval);
                     cancelAnimationFrame(pacmanReqMove);
                     pacmanReqMove = null;
                     pacmanMoveInterval = null;
                 }
+                pacman.moveDirection = "down";
                 moveTo(0, -1);
             }
             break;
