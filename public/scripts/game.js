@@ -9,13 +9,17 @@ let pacmanMoveInterval
 let pacmanReqMove;
 let pacmanPosToMove;
 const pacmanMoveCounter = 6;
-let pacmanDistanceTo = new THREE.Vector3(0, 0, 0);;
+let pacmanDistanceTo = new THREE.Vector3(0, 0, 0);
+let dotArray = [];
+let eatDotInterval;
+let curDot = null;
 
 export function initGame() {
     curLevel = LEVELS[0];
     drawLevels();
     NOP_VIEWER.impl.sceneUpdated(true, false);
 }
+
 function drawLevels() {
     if (!NOP_VIEWER.overlays.hasScene('custom-scene')) {
         NOP_VIEWER.overlays.addScene('custom-scene');
@@ -30,7 +34,9 @@ function drawLevel(level) {
     clearCheckedCells(checkedCells);
     const wallMaterial = new THREE.MeshLambertMaterial({ color: level.color, });
     const pacmanMaterial = new THREE.MeshLambertMaterial({ color: '#FF1FF8' });
+    const dotMaterial = new THREE.MeshLambertMaterial({ color: '#FFFFFF' });
     let tempFigure = [];
+    let geometry;
     for (let i = 0; i < 34; i++) {
         for (let j = 0; j < 34; j++) {
             switch (OBJECT_LIST[level.grid[i][j]]) {
@@ -49,7 +55,7 @@ function drawLevel(level) {
                             amount: DEPTH,
                             bevelEnabled: false,
                         };
-                        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                        geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
                         const wall = new THREE.Mesh(geometry, wallMaterial);
                         wall.position.set(level.offsetX, level.offsetY, level.offsetZ);
                         wall.rotation.setFromVector3(new THREE.Vector3(level.rotationX, level.rotationY, level.rotationZ));
@@ -59,12 +65,25 @@ function drawLevel(level) {
                 case OBJECT_TYPE.PACMAN:
                     xPacmanCell = j;
                     yPacmanCell = i;
-                    const geometry = new THREE.SphereGeometry(CELL_SIZE - 8, 32, 32);
+                    geometry = new THREE.SphereGeometry(CELL_SIZE - 8, 32, 32);
                     pacman = new THREE.Mesh(geometry, pacmanMaterial);
                     pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + CELL_SIZE - 8);
                     pacman.moveDirection = '';
                     NOP_VIEWER.overlays.addMesh(pacman, 'custom-scene');
                     document.addEventListener('keydown', pacmanMove);
+                    break;
+                case OBJECT_TYPE.DOT:
+                    let dot;
+                    geometry = new THREE.SphereGeometry(CELL_SIZE - 15, 32, 32);
+                    dot = new THREE.Mesh(geometry, dotMaterial);
+                    dot.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + CELL_SIZE - 8);
+                    dot.name = `dot_${dotArray.length}`;
+                    dotArray.push({
+                        i: i,
+                        j: j,
+                        mesh: dot,
+                    });
+                    NOP_VIEWER.overlays.addMesh(dot, 'custom-scene');
                     break;
             }
         }
@@ -127,10 +146,14 @@ function pacmanMove(e) {
             break;
     }
 }
+
 function canMove(x, y) {
-    return OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.BLANK ||
-        OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.DOT;
+    if (yPacmanCell - y >= 0 && yPacmanCell - y <= 33 && xPacmanCell + x >= 0 && xPacmanCell + x <= 33) {
+        return OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.BLANK ||
+            OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.DOT;
+    }
 }
+
 function moveTo(x, y) {
     pacmanDistanceTo = new THREE.Vector3(0, 0, 0);
     pacmanMoveInterval = setInterval(() => {
@@ -140,7 +163,9 @@ function moveTo(x, y) {
             pacmanPosToMove = pacman.position.clone();
             pacmanPosToMove = new THREE.Vector3(pacmanPosToMove.x + x * CELL_SIZE, pacmanPosToMove.y + y * CELL_SIZE, pacmanPosToMove.z);
             pacmanDistanceTo = new THREE.Vector3(pacmanPosToMove.x - pacman.position.x, pacmanPosToMove.y - pacman.position.y, pacmanPosToMove.z - pacman.position.z);
-
+            if (OBJECT_LIST[curLevel.grid[yPacmanCell - pacmanMovement.y][xPacmanCell + pacmanMovement.x]] == OBJECT_TYPE.DOT) {
+                curDot = dotArray.find(item => item.i == yPacmanCell - pacmanMovement.y && item.j == xPacmanCell + pacmanMovement.x).mesh;
+            }
             setupObjectPositionTween(pacman, pacman.position.clone(), pacmanPosToMove, 150, 0, TWEEN.Easing.Linear.None);
             updatePacmanCell();
         } else {
@@ -152,7 +177,7 @@ function moveTo(x, y) {
     }, 170);
     movePacman();
 }
-const movePacman = function () {
+const movePacman = function() {
     pacmanReqMove = requestAnimationFrame(movePacman);
     TWEEN.update();
     //pacman.position.set(pacman.position.x + pacmanDistanceTo.x / pacmanMoveCounter, pacman.position.y + pacmanDistanceTo.y / pacmanMoveCounter,
@@ -162,11 +187,29 @@ const movePacman = function () {
 };
 
 function updatePacmanCell() {
+    if (OBJECT_LIST[curLevel.grid[yPacmanCell - pacmanMovement.y][xPacmanCell + pacmanMovement.x]] == OBJECT_TYPE.DOT) {
+        eatDot(yPacmanCell - pacmanMovement.y, xPacmanCell + pacmanMovement.x);
+    }
     curLevel.grid[yPacmanCell][xPacmanCell] = 0;
     curLevel.grid[yPacmanCell - pacmanMovement.y][xPacmanCell + pacmanMovement.x] = 5;
     yPacmanCell -= pacmanMovement.y;
     xPacmanCell += pacmanMovement.x;
-    console.log(yPacmanCell, xPacmanCell);
+}
+
+function eatDot(i, j) {
+    // let dot = dotArray.find(item => item.i == i && item.j == j).mesh;
+    // console.log(dot.position);
+    // //console.log(pacman.position);
+    // eatDotInterval = setInterval(() => {
+    //     console.log(pacman.position);
+    //     if (dot.position.x == Math.floor(pacman.position.x) && dot.position.y == Math.floor(pacman.position.y) && dot.position.z == Math.floor(pacman.position.z) ||
+    //         dot.position.x == Math.ceil(pacman.position.x) && dot.position.y == Math.ceil(pacman.position.y) && dot.position.z == Math.ceil(pacman.position.z)) {
+    //         console.log(5);
+    //         NOP_VIEWER.overlays.removeMesh(dot, "custom-scene");
+    //         clearInterval(eatDotInterval);
+    //     }
+    // }, 20);
+
 }
 
 function setupObjectPositionTween(object, source, target, duration, delay, easing) {
@@ -174,8 +217,15 @@ function setupObjectPositionTween(object, source, target, duration, delay, easin
         .to(target, duration)
         .delay(delay)
         .easing(easing)
-        .onUpdate(function () {
+        .onUpdate(function() {
             object.position.copy(source);
+            if (curDot) {
+                if (curDot.position.x == Math.floor(pacman.position.x) && curDot.position.y == Math.floor(pacman.position.y) && curDot.position.z == Math.floor(pacman.position.z) ||
+                    curDot.position.x == Math.ceil(pacman.position.x) && curDot.position.y == Math.ceil(pacman.position.y) && curDot.position.z == Math.ceil(pacman.position.z)) {
+                    NOP_VIEWER.overlays.removeMesh(curDot, "custom-scene");
+                    curDot = null;
+                }
+            }
         })
         .start();
 }
@@ -231,22 +281,22 @@ function truncateFigure(tempFigure) {
     for (let i = 0; i < tempFigure.length; i++) {
         let count = 0;
         let point = tempFigure[i];
-        if (checkPointToSkip(tempFigure, point.x, point.y + (CELL_SIZE - WALL_SIZE))
-            || checkPointToSkip(tempFigure, point.x, point.y + (WALL_SIZE)))
+        if (checkPointToSkip(tempFigure, point.x, point.y + (CELL_SIZE - WALL_SIZE)) ||
+            checkPointToSkip(tempFigure, point.x, point.y + (WALL_SIZE)))
             count++;
-        if (checkPointToSkip(tempFigure, point.x, point.y - (CELL_SIZE - WALL_SIZE))
-            || checkPointToSkip(tempFigure, point.x, point.y - (WALL_SIZE)))
+        if (checkPointToSkip(tempFigure, point.x, point.y - (CELL_SIZE - WALL_SIZE)) ||
+            checkPointToSkip(tempFigure, point.x, point.y - (WALL_SIZE)))
             count++;
-        if (checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y)
-            || checkPointToSkip(tempFigure, point.x + (WALL_SIZE), point.y))
+        if (checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y) ||
+            checkPointToSkip(tempFigure, point.x + (WALL_SIZE), point.y))
             count++;
-        if (checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y)
-            || checkPointToSkip(tempFigure, point.x - (WALL_SIZE), point.y))
+        if (checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y) ||
+            checkPointToSkip(tempFigure, point.x - (WALL_SIZE), point.y))
             count++;
-        if (checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y + (CELL_SIZE - WALL_SIZE))
-            || checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y + (CELL_SIZE - WALL_SIZE))
-            || checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y - (CELL_SIZE - WALL_SIZE))
-            || checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y - (CELL_SIZE - WALL_SIZE)))
+        if (checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y + (CELL_SIZE - WALL_SIZE)) ||
+            checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y + (CELL_SIZE - WALL_SIZE)) ||
+            checkPointToSkip(tempFigure, point.x + (CELL_SIZE - WALL_SIZE), point.y - (CELL_SIZE - WALL_SIZE)) ||
+            checkPointToSkip(tempFigure, point.x - (CELL_SIZE - WALL_SIZE), point.y - (CELL_SIZE - WALL_SIZE)))
             count++;
         if (count < 5)
             figure.push(tempFigure[i]);
@@ -265,8 +315,7 @@ function follow(levelGrid, type, i, j, tempFigure, checkedCells) {
                 tempFigureAdd(tempFigure, i, j + 1);
                 checkedCells[i][j + 1] = levelGrid[i][j + 1];
                 follow(levelGrid, "right", i, j + 1, tempFigure, checkedCells);
-            }
-            else
+            } else
                 follow(levelGrid, "down", i, j, tempFigure, checkedCells);
         }
         if (type == "down" && i < 33) {
@@ -283,8 +332,7 @@ function follow(levelGrid, type, i, j, tempFigure, checkedCells) {
                 tempFigureAdd(tempFigure, i, j - 1);
                 checkedCells[i][j - 1] = levelGrid[i][j - 1];
                 follow(levelGrid, "left", i, j - 1, tempFigure, checkedCells);
-            }
-            else
+            } else
                 follow(levelGrid, "down", i, j, tempFigure, checkedCells);
         }
         /* if (type == "top" && i > 0) {
@@ -357,4 +405,3 @@ function move() {
     }
 }
  */
-
