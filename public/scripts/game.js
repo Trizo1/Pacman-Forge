@@ -1,20 +1,11 @@
-import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVELS, PACMAN_SPEED, PACMAN_MOVEMENT } from './setup.js';
+import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVELS, } from './setup.js';
+import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacmanCell, pacmanMoveStep } from './pacman.js';
 
 let curLevel;
-
-let pacman;
-let xPacmanCell;
-let yPacmanCell;
-let pacmanMovement = { x: 0, y: 0 };
-let pacmanMoveInterval;
-let pacmanReqMove;
-let pacmanPosToMove;
-let pacmanDistanceTo = new THREE.Vector3(0, 0, 0);
 
 let dotArray = [];
 let curDot = null;
 
-const pacmanMaterial = new THREE.MeshLambertMaterial({ color: '#FF1FF8' });
 const dotMaterial = new THREE.MeshLambertMaterial({ color: '#FFFFFF' });
 
 export function initGame() {
@@ -63,13 +54,13 @@ function drawLevel(level) {
                     }
                     break;
                 case OBJECT_TYPE.PACMAN:
-                    xPacmanCell = j;
-                    yPacmanCell = i;
-                    geometry = new THREE.SphereGeometry(CELL_SIZE - 8, 32, 32);
-                    pacman = new THREE.Mesh(geometry, pacmanMaterial);
-                    pacman.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + CELL_SIZE - 8);
-                    pacman.moveDirection = '';
-                    NOP_VIEWER.overlays.addMesh(pacman, 'custom-scene');
+                    pacman.iCell = i;
+                    pacman.jCell = j;
+                    geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
+                    pacman.mesh = new THREE.Mesh(geometry, pacman.material);
+                    pacman.mesh.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
+                        level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + pacman.radius);
+                    NOP_VIEWER.overlays.addMesh(pacman.mesh, 'custom-scene');
                     document.addEventListener('keydown', pacmanMove);
                     break;
                 case OBJECT_TYPE.DOT:
@@ -93,32 +84,32 @@ function drawLevel(level) {
 function pacmanMove(e) {
     switch (e.keyCode) {
         case 65: //A
-            if (pacmanCanMove(-1, 0) && pacman.moveDirection != PACMAN_MOVEMENT.LEFT) {
-                if (pacmanMoveInterval && pacmanReqMove)
+            if (pacmanCanMove(-1, 0, curLevel.grid) && pacman.moveDirection != PACMAN_MOVEMENT.LEFT) {
+                if (pacman.moveInterval && pacman.reqMove)
                     clearPacmanMovement();
                 pacman.moveDirection = PACMAN_MOVEMENT.LEFT;
                 pacmanMoveTo(-1, 0);
             }
             break;
         case 68: //D
-            if (pacmanCanMove(1, 0) && pacman.moveDirection != PACMAN_MOVEMENT.RIGHT) {
-                if (pacmanMoveInterval && pacmanReqMove)
+            if (pacmanCanMove(1, 0, curLevel.grid) && pacman.moveDirection != PACMAN_MOVEMENT.RIGHT) {
+                if (pacman.moveInterval && pacman.reqMove)
                     clearPacmanMovement();
                 pacman.moveDirection = PACMAN_MOVEMENT.RIGHT;
                 pacmanMoveTo(1, 0);
             }
             break;
         case 87: //W
-            if (pacmanCanMove(0, 1) && pacman.moveDirection != PACMAN_MOVEMENT.UP) {
-                if (pacmanMoveInterval && pacmanReqMove)
+            if (pacmanCanMove(0, 1, curLevel.grid) && pacman.moveDirection != PACMAN_MOVEMENT.UP) {
+                if (pacman.moveInterval && pacman.reqMove)
                     clearPacmanMovement();
                 pacman.moveDirection = PACMAN_MOVEMENT.UP;
                 pacmanMoveTo(0, 1);
             }
             break;
         case 83: //S
-            if (pacmanCanMove(0, -1) && pacman.moveDirection != PACMAN_MOVEMENT.DOWN) {
-                if (pacmanMoveInterval && pacmanReqMove)
+            if (pacmanCanMove(0, -1, curLevel.grid) && pacman.moveDirection != PACMAN_MOVEMENT.DOWN) {
+                if (pacman.moveInterval && pacman.reqMove)
                     clearPacmanMovement();
                 pacman.moveDirection = PACMAN_MOVEMENT.DOWN;
                 pacmanMoveTo(0, -1);
@@ -127,55 +118,32 @@ function pacmanMove(e) {
     }
 }
 
-function clearPacmanMovement() {
-    clearInterval(pacmanMoveInterval);
-    cancelAnimationFrame(pacmanReqMove);
-    pacmanReqMove = null;
-    pacmanMoveInterval = null;
-}
-
-function pacmanCanMove(x, y) {
-    if (yPacmanCell - y >= 0 && yPacmanCell - y <= 33 && xPacmanCell + x >= 0 && xPacmanCell + x <= 33) {
-        return OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.BLANK ||
-            OBJECT_LIST[curLevel.grid[yPacmanCell - y][xPacmanCell + x]] == OBJECT_TYPE.DOT;
-    }
-}
-
 function pacmanMoveTo(x, y) {
-    pacmanDistanceTo = new THREE.Vector3(0, 0, 0);
-    pacmanMoveInterval = setInterval(() => {
-        if (pacmanCanMove(x, y)) {
-            pacmanMovement.x = x;
-            pacmanMovement.y = y;
-            pacmanPosToMove = pacman.position.clone();
-            pacmanPosToMove = new THREE.Vector3(pacmanPosToMove.x + x * CELL_SIZE, pacmanPosToMove.y + y * CELL_SIZE, pacmanPosToMove.z);
-            pacmanDistanceTo = new THREE.Vector3(pacmanPosToMove.x - pacman.position.x, pacmanPosToMove.y - pacman.position.y, pacmanPosToMove.z - pacman.position.z);
-            if (OBJECT_LIST[curLevel.grid[yPacmanCell - pacmanMovement.y][xPacmanCell + pacmanMovement.x]] == OBJECT_TYPE.DOT)
-                curDot = dotArray.find(item => item.i == yPacmanCell - pacmanMovement.y && item.j == xPacmanCell + pacmanMovement.x).mesh;
-            setupObjectPositionTween(pacman, pacman.position.clone(), pacmanPosToMove, PACMAN_SPEED, 0, TWEEN.Easing.Linear.None);
-            updatePacmanCell();
+    pacman.distanceTo = new THREE.Vector3(0, 0, 0);
+    pacman.moveInterval = setInterval(() => {
+        if (pacmanCanMove(x, y, curLevel.grid)) {
+            pacmanMoveStep(x, y);
+            if (OBJECT_LIST[curLevel.grid[pacman.iCell - pacman.movement.y][pacman.jCell + pacman.movement.x]] == OBJECT_TYPE.DOT)
+                curDot = dotArray.find(item => item.i == pacman.iCell - pacman.movement.y && item.j == pacman.jCell + pacman.movement.x).mesh;
+            setupObjectPositionTween(pacman.mesh, pacman.mesh.position.clone(), pacman.posToMove, pacman.animationTime, 0, TWEEN.Easing.Linear.None);
+            updatePacmanCell(curLevel.grid);
         } else
             clearPacmanMovement();
-    }, PACMAN_SPEED + 20);
+    }, pacman.animationTime + 20);
     movePacman();
 }
+
 const movePacman = function () {
-    pacmanReqMove = requestAnimationFrame(movePacman);
+    pacman.reqMove = requestAnimationFrame(movePacman);
     TWEEN.update();
     NOP_VIEWER.impl.sceneUpdated(true, false);
     //NOP_VIEWER.impl.invalidate(true, false, true); то же самое NOP_VIEWER.impl.sceneUpdated(true, false);
 };
 
-function updatePacmanCell() {
-    curLevel.grid[yPacmanCell][xPacmanCell] = 0;
-    curLevel.grid[yPacmanCell - pacmanMovement.y][xPacmanCell + pacmanMovement.x] = 5;
-    yPacmanCell -= pacmanMovement.y;
-    xPacmanCell += pacmanMovement.x;
-}
-
 function eatDot() {
-    if (curDot.position.x == Math.floor(pacman.position.x) && curDot.position.y == Math.floor(pacman.position.y) && curDot.position.z == Math.floor(pacman.position.z) ||
-        curDot.position.x == Math.ceil(pacman.position.x) && curDot.position.y == Math.ceil(pacman.position.y) && curDot.position.z == Math.ceil(pacman.position.z)) {
+    if (curDot.position.x == Math.floor(pacman.mesh.position.x) && curDot.position.y == Math.floor(pacman.mesh.position.y) &&
+        curDot.position.z == Math.floor(pacman.mesh.position.z) || curDot.position.x == Math.ceil(pacman.mesh.position.x) &&
+        curDot.position.y == Math.ceil(pacman.mesh.position.y) && curDot.position.z == Math.ceil(pacman.mesh.position.z)) {
         NOP_VIEWER.overlays.removeMesh(curDot, "custom-scene");
         curDot = null;
     }
