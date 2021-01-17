@@ -1,5 +1,10 @@
 import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVELS, } from './setup.js';
 import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacmanCell, pacmanMoveStep } from './pacman.js';
+// import * as THREE from "../node_modules/three/build/three.module.js";
+// import GLTFLoader from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/GLTFLoader.js';
+
+const loader = new GLTFLoader();
 
 let curLevel;
 
@@ -56,6 +61,15 @@ function drawLevel(level) {
                 case OBJECT_TYPE.PACMAN:
                     pacman.iCell = i;
                     pacman.jCell = j;
+                    // let example = new THREE.Object3D();
+                    const pac = await loader.loadAsync("./assets/pocman/pacman_.glb");
+                    console.log(pac);
+                    // , function (object) {
+                    //     example = object.scene;
+                    //     NOP_VIEWER.impl.scene.add(example);
+                    //     NOP_VIEWER.impl.sceneUpdated(true, false);
+                    // });
+
                     geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
                     pacman.mesh = new THREE.Mesh(geometry, pacman.material);
                     pacman.mesh.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),

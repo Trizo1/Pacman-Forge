@@ -5,7 +5,6 @@ require('dotenv').config();
 const FORGE_CLIENT_ID = process.env.CLIENT_ID;
 const FORGE_CLIENT_SECRET = process.env.CLIENT_SECRET;
 
-
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static(__dirname + '/public'));
