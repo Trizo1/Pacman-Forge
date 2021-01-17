@@ -161,3 +161,12 @@ export const LEVELS = [
     { grid: RIGHT_LEVEL, offsetX: CUBE_SIZE, offsetY: 0, offsetZ: 0, rotationX: 0, rotationY: Math.PI / 2, rotationZ: 0, color: '#5036d9' },
     { grid: LEFT_LEVEL, offsetX: -CUBE_SIZE - DEPTH, offsetY: 0, offsetZ: 0, rotationX: 0, rotationY: Math.PI / 2, rotationZ: 0, color: '#359c9c' },
 ];
+
+export const PACMAN_SPEED = 115;
+
+export const PACMAN_MOVEMENT = {
+    UP: "up",
+    DOWN: "down",
+    LEFT: "left",
+    RIGHT: "right"
+};
