@@ -8,7 +8,7 @@ let viewer;
 const documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmVWMi5pcHQ';
 //dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL0NVQkVfdjAuaXB0
 //dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmUuaXB0
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     launchViewer();
 });
 
@@ -33,16 +33,16 @@ function launchViewer() {
     };
     const config = {
         extensions: ['Autodesk.ViewCubeUi']
-        /* disabledExtensions: {
-            measure: true
-        } */
+            /* disabledExtensions: {
+                measure: true
+            } */
     };
 
     Autodesk.Viewing.Initializer(options, () => {
         viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('viewer'), config);
         viewer.start();
-        //viewer.addEventListener(Autodesk.Viewing.TOOLBAR_CREATED_EVENT, onToolBarCreated)
-        viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, function () {
+        viewer.addEventListener(Autodesk.Viewing.TOOLBAR_CREATED_EVENT, onToolBarCreated)
+        viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, function() {
             const tree = viewer.model.getInstanceTree();
             const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
             material.side = THREE.DoubleSide;
@@ -75,7 +75,7 @@ function onDocumentLoadSuccess(doc) {
         let cubeExt = viewer.getExtension('Autodesk.ViewCubeUi');
         cubeExt.setViewCube('front');
         cubeExt.showTriad(true);
-        //cubeExt.setVisible(false);
+        cubeExt.setVisible(false);
 
         viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, (e) => {
             //viewer.setBackgroundColor(60, 60, 60, 60, 60, 60); //fix
@@ -85,7 +85,7 @@ function onDocumentLoadSuccess(doc) {
             viewer.setGroundReflection(false);
             viewer.setProgressiveRendering(true);
 
-            //disableEventsEvents();
+            disableEventsEvents();
             zoomCamera();
             initGame();
         });
@@ -104,13 +104,16 @@ function disableEventsEvents() {
             "onObject": ['selectToggle'],
             "offObject": ['deselectAll']
         },
-        "disableMouseWheel": true
+        "disableMouseWheel": true,
+        "disableMouseMove": true
     };
     viewer.setCanvasClickBehavior(config);
     viewer.clickHandler.handleDoubleClick = (e) => {
         return;
     }
-    //viewer.toolController.deactivateTool('orbit');
+    for (const tool of viewer.toolController.getToolNames()) {
+        viewer.toolController.deactivateTool(tool);
+    }
 }
 
 function onDocumentLoadFailure(viewerErrorCode) {
@@ -120,8 +123,6 @@ function onDocumentLoadFailure(viewerErrorCode) {
 function onToolBarCreated() {
     const toolbar = viewer.toolbar;
     toolbar._controls.forEach((c) => {
-        if (c.getId() !== "modelTools") {
-            c.setDisplay('none');
-        }
+        c.setDisplay('none');
     });
 }

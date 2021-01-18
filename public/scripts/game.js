@@ -6,14 +6,32 @@ import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacm
 
 // const loader = new GLTFLoader();
 
-let curLevel;
+let curLevel = LEVELS[0];
 
 let dotArray = [];
 let curDot = null;
-
 //let pacmanTween;
 
 const dotMaterial = new THREE.MeshLambertMaterial({ color: '#FFFFFF' });
+
+let score = 0;
+let scoreText;
+
+window.onload = function() {
+    scoreText = document.getElementById('score');
+    // document.getElementById('newGame').onclick = startNewGame;
+    findPacman();
+}
+
+function findPacman() {
+    for (let i = 0; i < 34; i++) {
+        let j = curLevel.grid[i].indexOf(OBJECT_LIST.indexOf(OBJECT_TYPE.PACMAN));
+        if (j != -1) {
+            pacman.iCell = i;
+            pacman.jCell = j;
+        }
+    }
+}
 
 export function initGame() {
     /* document.getElementById("pause").onclick = function () {
@@ -25,9 +43,13 @@ export function initGame() {
         pacmanMoveTo(pacman.movement.x, pacman.movement.y);
     }; */
 
-    curLevel = LEVELS[0];
     drawLevels();
+    drawPacman(pacman.iCell, pacman.jCell);
     NOP_VIEWER.impl.sceneUpdated(true, false);
+}
+
+function startNewGame() {
+
 }
 
 function drawLevels() {
@@ -69,25 +91,26 @@ function drawLevel(level) {
                         NOP_VIEWER.overlays.addMesh(wall, 'custom-scene');
                     }
                     break;
-                case OBJECT_TYPE.PACMAN:
-                    pacman.iCell = i;
-                    pacman.jCell = j;
-                    // let example = new THREE.Object3D();
-                    // const pac = await loader.loadAsync("./assets/pocman/pacman_.glb");
-                    // console.log(pac);
-                    // , function (object) {
-                    //     example = object.scene;
-                    //     NOP_VIEWER.impl.scene.add(example);
-                    //     NOP_VIEWER.impl.sceneUpdated(true, false);
-                    // });
+                    // case OBJECT_TYPE.PACMAN:
+                    //     pacman.iCell = i;
+                    //     pacman.jCell = j;
 
-                    geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
-                    pacman.mesh = new THREE.Mesh(geometry, pacman.material);
-                    pacman.mesh.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
-                        level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + pacman.radius);
-                    NOP_VIEWER.overlays.addMesh(pacman.mesh, 'custom-scene');
-                    document.addEventListener('keydown', pacmanMove);
-                    break;
+                    //     // let example = new THREE.Object3D();
+                    //     // const pac = await loader.loadAsync("./assets/pocman/pacman_.glb");
+                    //     // console.log(pac);
+                    //     // , function (object) {
+                    //     //     example = object.scene;
+                    //     //     NOP_VIEWER.impl.scene.add(example);
+                    //     //     NOP_VIEWER.impl.sceneUpdated(true, false);
+                    //     // });
+
+                    //     geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
+                    //     pacman.mesh = new THREE.Mesh(geometry, pacman.material);
+                    //     pacman.mesh.position.set(level.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
+                    //         level.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), level.offsetZ + pacman.radius);
+                    //     NOP_VIEWER.overlays.addMesh(pacman.mesh, 'custom-scene');
+                    //     document.addEventListener('keydown', pacmanMove);
+                    //     break;
                 case OBJECT_TYPE.DOT:
                     let dot;
                     geometry = new THREE.SphereGeometry(CELL_SIZE - 15, 32, 32);
@@ -104,6 +127,15 @@ function drawLevel(level) {
             }
         }
     }
+}
+
+function drawPacman(i, j) {
+    let geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
+    pacman.mesh = new THREE.Mesh(geometry, pacman.material);
+    pacman.mesh.position.set(curLevel.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
+        curLevel.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + pacman.radius);
+    NOP_VIEWER.overlays.addMesh(pacman.mesh, 'custom-scene');
+    document.addEventListener('keydown', pacmanMove);
 }
 
 function pacmanMove(e) {
@@ -157,7 +189,7 @@ function pacmanMoveTo(x, y) {
     movePacman();
 }
 
-const movePacman = function () {
+const movePacman = function() {
     pacman.reqMove = requestAnimationFrame(movePacman);
     TWEEN.update();
     NOP_VIEWER.impl.sceneUpdated(true, false);
@@ -168,9 +200,12 @@ function eatDot() {
     if (curDot.position.x == Math.floor(pacman.mesh.position.x) && curDot.position.y == Math.floor(pacman.mesh.position.y) &&
         curDot.position.z == Math.floor(pacman.mesh.position.z) || curDot.position.x == Math.ceil(pacman.mesh.position.x) &&
         curDot.position.y == Math.ceil(pacman.mesh.position.y) && curDot.position.z == Math.ceil(pacman.mesh.position.z)) {
+        score++;
+        scoreText.innerHTML = `Счет: ${score}`;
         NOP_VIEWER.overlays.removeMesh(curDot, "custom-scene");
         curDot = null;
     }
+
 }
 
 function setupObjectPositionTween(object, source, target, duration, delay, easing) {
@@ -178,7 +213,7 @@ function setupObjectPositionTween(object, source, target, duration, delay, easin
         .to(target, duration)
         .delay(delay)
         .easing(easing)
-        .onUpdate(function () {
+        .onUpdate(function() {
             object.position.copy(source);
             if (curDot)
                 eatDot();

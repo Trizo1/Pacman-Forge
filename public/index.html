@@ -8,17 +8,24 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no" />
     <meta charset="utf-8">
     <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css"
-        type="text/css">
+    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css" type="text/css">
     <link rel="stylesheet" href="./css/style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com/%22%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="game">
         <div class="container">
-            <div class="game__controls">
-                <!-- <button id="pause">Пауза</button>
-                <button id="resume">Продолжить</button> -->
+            <div class="game__top-bar">
+                <span class="game__score" id="score">
+                    Счет: 0
+                </span>
+                <div class="game__controls">
+                    <!-- <button class="game__btn" id="pause">Пауза</button>
+                <button class="game__btn" id="resume">Продолжить</button> -->
+                    <button class="game__btn" id="newGame">Новая игра</button>
+                </div>
             </div>
             <div id="viewer"></div>
         </div>
