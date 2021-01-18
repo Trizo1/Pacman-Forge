@@ -8,7 +8,6 @@ export let pacman = {
     moveInterval: null,
     reqMove: null,
     posToMove: null,
-    distanceTo: new THREE.Vector3(0, 0, 0),
     material: new THREE.MeshLambertMaterial({ color: '#FF1FF8' }),
     radius: 12,
     animationTime: 120,
@@ -47,6 +46,4 @@ export function pacmanMoveStep(x, y) {
     pacman.movement.x = x;
     pacman.posToMove = pacman.mesh.position.clone();
     pacman.posToMove = new THREE.Vector3(pacman.posToMove.x + x * CELL_SIZE, pacman.posToMove.y + y * CELL_SIZE, pacman.posToMove.z);
-    pacman.distanceTo = new THREE.Vector3(pacman.posToMove.x - pacman.mesh.position.x, pacman.posToMove.y - pacman.mesh.position.y,
-        pacman.posToMove.z - pacman.mesh.position.z);
 }

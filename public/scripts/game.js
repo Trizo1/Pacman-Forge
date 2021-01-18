@@ -2,18 +2,29 @@ import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVEL
 import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacmanCell, pacmanMoveStep } from './pacman.js';
 // import * as THREE from "../node_modules/three/build/three.module.js";
 // import GLTFLoader from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/GLTFLoader.js';
+// import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/GLTFLoader.js';
 
-const loader = new GLTFLoader();
+// const loader = new GLTFLoader();
 
 let curLevel;
 
 let dotArray = [];
 let curDot = null;
 
+//let pacmanTween;
+
 const dotMaterial = new THREE.MeshLambertMaterial({ color: '#FFFFFF' });
 
 export function initGame() {
+    /* document.getElementById("pause").onclick = function () {
+        pacmanTween.stop();
+        clearPacmanMovement();
+    };
+    document.getElementById("pause").onclick = function () {
+        pacmanTween.start();
+        pacmanMoveTo(pacman.movement.x, pacman.movement.y);
+    }; */
+
     curLevel = LEVELS[0];
     drawLevels();
     NOP_VIEWER.impl.sceneUpdated(true, false);
@@ -62,8 +73,8 @@ function drawLevel(level) {
                     pacman.iCell = i;
                     pacman.jCell = j;
                     // let example = new THREE.Object3D();
-                    const pac = await loader.loadAsync("./assets/pocman/pacman_.glb");
-                    console.log(pac);
+                    // const pac = await loader.loadAsync("./assets/pocman/pacman_.glb");
+                    // console.log(pac);
                     // , function (object) {
                     //     example = object.scene;
                     //     NOP_VIEWER.impl.scene.add(example);
@@ -133,7 +144,6 @@ function pacmanMove(e) {
 }
 
 function pacmanMoveTo(x, y) {
-    pacman.distanceTo = new THREE.Vector3(0, 0, 0);
     pacman.moveInterval = setInterval(() => {
         if (pacmanCanMove(x, y, curLevel.grid)) {
             pacmanMoveStep(x, y);
