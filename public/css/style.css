@@ -40,7 +40,8 @@ h6 {
     padding: 50px 0;
 }
 
-.game {}
+.game {
+}
 
 .game__top-bar {
     position: absolute;
@@ -54,8 +55,9 @@ h6 {
 }
 
 .game__score {
-    color: #FFFFFF;
+    font-family: "Source Sans Pro", sans-serif;
     font-size: 22px;
+    color: #ffffff;
     user-select: none;
 }
 
@@ -64,13 +66,13 @@ h6 {
 }
 
 .game__btn {
-    font-family: 'Source Sans Pro', sans-serif;
+    font-family: "Source Sans Pro", sans-serif;
     font-size: 18px;
     font-weight: 600;
-    border: 2px solid #FFFFFF;
+    border: 2px solid #ffffff;
     border-radius: 4px;
     padding: 5px 10px;
-    color: #FFFFFF;
+    color: #ffffff;
     text-transform: uppercase;
     z-index: 1;
     transition: all 150ms ease-in-out;

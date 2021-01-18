@@ -32,6 +32,9 @@ export function clearPacmanMovement() {
     cancelAnimationFrame(pacman.reqMove);
     pacman.moveInterval = null;
     pacman.reqMove = null;
+    pacman.movement = { x: 0, y: 0 };
+    pacman.moveDirection = null;
+    pacman.posToMove = null;
 }
 
 export function updatePacmanCell(grid) {

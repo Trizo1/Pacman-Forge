@@ -8,7 +8,7 @@ let viewer;
 const documentId = 'urn:dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmVWMi5pcHQ';
 //dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL0NVQkVfdjAuaXB0
 //dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGFjbWFuLWZvcmdlL2N1YmUuaXB0
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     launchViewer();
 });
 
@@ -33,16 +33,16 @@ function launchViewer() {
     };
     const config = {
         extensions: ['Autodesk.ViewCubeUi']
-            /* disabledExtensions: {
-                measure: true
-            } */
+        /* disabledExtensions: {
+            measure: true
+        } */
     };
 
     Autodesk.Viewing.Initializer(options, () => {
         viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('viewer'), config);
         viewer.start();
         viewer.addEventListener(Autodesk.Viewing.TOOLBAR_CREATED_EVENT, onToolBarCreated)
-        viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, function() {
+        viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, function () {
             const tree = viewer.model.getInstanceTree();
             const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
             material.side = THREE.DoubleSide;
@@ -104,16 +104,16 @@ function disableEventsEvents() {
             "onObject": ['selectToggle'],
             "offObject": ['deselectAll']
         },
-        "disableMouseWheel": true,
+        //"disableMouseWheel": true,
         "disableMouseMove": true
     };
     viewer.setCanvasClickBehavior(config);
     viewer.clickHandler.handleDoubleClick = (e) => {
         return;
     }
-    for (const tool of viewer.toolController.getToolNames()) {
+    /* for (const tool of viewer.toolController.getToolNames()) {
         viewer.toolController.deactivateTool(tool);
-    }
+    } */
 }
 
 function onDocumentLoadFailure(viewerErrorCode) {
