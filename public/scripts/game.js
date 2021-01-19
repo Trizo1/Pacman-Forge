@@ -3,7 +3,7 @@ import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacm
 // import * as THREE from "../node_modules/three/build/three.module.js";
 // import GLTFLoader from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
 // import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/GLTFLoader.js';
-
+// import { GLTFLoader, Scene } from 'three-full';
 // const loader = new GLTFLoader();
 
 let curLevel = LEVELS[0];
@@ -103,6 +103,12 @@ function drawDot(i, j) {
 
 function drawPacman() {
     findPacman();
+
+    // loader.load('./assets/pacman_.glb', (object) => {
+    //     let scene = new Scene();
+    //     scene.add(object.scene);
+    //     console.log(scene);
+    // });
     geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
     pacman.mesh = new THREE.Mesh(geometry, pacman.material);
     pacman.mesh.position.set(curLevel.offsetX + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
