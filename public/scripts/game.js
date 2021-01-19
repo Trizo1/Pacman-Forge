@@ -5,6 +5,8 @@ import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacm
 // import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/GLTFLoader.js';
 // import { GLTFLoader, Scene } from 'three-full';
 // const loader = new GLTFLoader();
+import CSG from './three-csg.js';
+
 
 let curLevel = LEVELS[0];
 
@@ -103,15 +105,43 @@ function drawDot(i, j) {
 
 function drawPacman() {
     findPacman();
-    console.log(NOP_VIEWER);
     // loader.load('./assets/pacman_.glb', (object) => {
     //     let scene = new Scene();
     //     scene.add(object.scene);
     //     NOP_VIEWER.impl.renderer(scene, NOP_VIEWER.impl.camera);
     // });
+    // let sphere = new THREE.SphereGeometry(pacman.radius, 32, 32);
+    // let shape = new THREE.Shape();
+    // shape.moveTo(0, 0);
+    // shape.lineTo(10, 5);
+    // shape.lineTo(10, -5);
+    // shape.lineTo(0, 0);
+    // let extrudeSettings = {
+    //     steps: 1,
+    //     amount: 30,
+    //     bevelEnabled: false,
+    // };
+    // let triangle = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    // console.log(triangle);
+    // let g1 = new THREE.BufferGeometry().fromGeometry(sphere);
+    // let g2 = new THREE.BufferGeometry().fromGeometry(triangle)
+
+    // // let meshSphere = new THREE.Mesh(sphere, pacman.material);
+    // // let meshPrism = new THREE.Mesh(triangle, pacman.material);
+
+    // let box1 = CSG.subtract([g1, g2]);
+    // let ggg = CSG.BufferGeometry(box1);
+    // console.log(ggg);
+    // // let box2 = CSG.subtract([
+    // //     meshSphere, meshPrism
+    // // ]);
+
+    // // NOP_VIEWER.overlays.addMesh(new THREE.Mesh(ggg, pacman.material), 'custom-scene');
+
+    // // NOP_VIEWER.overlays.addMesh(box2, 'custom-scene');
 
 
-    geometry = new THREE.SphereGeometry(pacman.radius, 32, 32, 0.3 * Math.PI, 1.6 * Math.PI, 0, Math.PI);
+    geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
     pacman.material.side = THREE.DoubleSide;
     pacman.mesh = new THREE.Mesh(geometry, pacman.material);
     pacman.mesh.position.set(curLevel.offsetX + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
