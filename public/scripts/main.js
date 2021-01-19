@@ -77,7 +77,7 @@ function onDocumentLoadSuccess(doc) {
         let cubeExt = viewer.getExtension('Autodesk.ViewCubeUi');
         cubeExt.setViewCube('front');
         cubeExt.showTriad(true);
-        cubeExt.setVisible(false);
+        //cubeExt.setVisible(false);
 
         viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, (e) => {
             //viewer.setBackgroundColor(60, 60, 60, 60, 60, 60); //fix
@@ -88,7 +88,7 @@ function onDocumentLoadSuccess(doc) {
             viewer.setProgressiveRendering(true);
 
             disableEventsEvents();
-            zoomCamera();
+            //zoomCamera();
             initGame();
         });
     });
