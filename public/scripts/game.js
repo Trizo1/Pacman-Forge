@@ -103,13 +103,16 @@ function drawDot(i, j) {
 
 function drawPacman() {
     findPacman();
-
+    console.log(NOP_VIEWER);
     // loader.load('./assets/pacman_.glb', (object) => {
     //     let scene = new Scene();
     //     scene.add(object.scene);
-    //     console.log(scene);
+    //     NOP_VIEWER.impl.renderer(scene, NOP_VIEWER.impl.camera);
     // });
-    geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
+
+
+    geometry = new THREE.SphereGeometry(pacman.radius, 32, 32, 0.3 * Math.PI, 1.6 * Math.PI, 0, Math.PI);
+    pacman.material.side = THREE.DoubleSide;
     pacman.mesh = new THREE.Mesh(geometry, pacman.material);
     pacman.mesh.position.set(curLevel.offsetX + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
         curLevel.offsetY - (pacman.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + pacman.radius);

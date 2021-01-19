@@ -41,7 +41,7 @@ function launchViewer() {
     Autodesk.Viewing.Initializer(options, () => {
         viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('viewer'), config);
         viewer.start();
-        viewer.addEventListener(Autodesk.Viewing.TOOLBAR_CREATED_EVENT, onToolBarCreated)
+        // viewer.addEventListener(Autodesk.Viewing.TOOLBAR_CREATED_EVENT, onToolBarCreated)
         viewer.addEventListener(Autodesk.Viewing.OBJECT_TREE_CREATED_EVENT, function () {
             const tree = viewer.model.getInstanceTree();
             const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
