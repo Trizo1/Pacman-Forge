@@ -72,8 +72,6 @@ function launchViewer() {
 function onDocumentLoadSuccess(doc) {
     var viewables = doc.getRoot().getDefaultGeometry();
     viewer.loadDocumentNode(doc, viewables).then(i => {
-        console.log(viewer);
-        console.log(viewer.getVisibleModels());
         let cubeExt = viewer.getExtension('Autodesk.ViewCubeUi');
         cubeExt.setViewCube('front');
         cubeExt.showTriad(true);

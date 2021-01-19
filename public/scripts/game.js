@@ -5,12 +5,12 @@ import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacm
 // import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/GLTFLoader.js';
 // import { GLTFLoader, Scene } from 'three-full';
 // const loader = new GLTFLoader();
-import CSG from './three-csg.js';
+// import CSG from './three-csg.js';
 
 
 let curLevel = LEVELS[0];
 
-let dotArray = [];
+let dotsArray = [];
 let curDot = null;
 //let pacmanTween;
 
@@ -20,6 +20,7 @@ const dotMaterial = new THREE.MeshLambertMaterial({ color: '#FFFFFF' });
 let levelGrid = [];
 let score = 0;
 let scoreText;
+
 
 window.onload = function () {
     scoreText = document.getElementById('score');
@@ -55,18 +56,18 @@ function startNewGame() {
 
 function resetPacman() {
     findPacman();
-    pacman.mesh.position.set(curLevel.offsetX + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
-        curLevel.offsetY - (pacman.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + pacman.radius);
+    pacman.mesh.position.set(curLevel.offset.x + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
+        curLevel.offset.y - (pacman.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offset.z + pacman.radius);
 }
 
 function clearScene() {
     curDot = null;
     removeDots();
-    dotArray = [];
+    dotsArray = [];
 }
 
 function removeDots() {
-    dotArray.forEach(dot => {
+    dotsArray.forEach(dot => {
         NOP_VIEWER.overlays.removeMesh(dot.mesh, "custom-scene");
     });
     NOP_VIEWER.impl.sceneUpdated(true, false);
@@ -82,25 +83,41 @@ function initLevelGrid() {
 }
 
 function drawDots() {
-    let dots = findObject(OBJECT_TYPE.DOT, curLevel.grid);
-    dots.forEach(dot => {
-        drawDot(dot.i, dot.j);
-    });
+    for (let level of LEVELS) {
+        dotsArray = [];
+        let pivot = new THREE.Group();
+        let side = new THREE.Object3D();
+
+        let dots = findObject(OBJECT_TYPE.DOT, level.grid);
+        dots.forEach(dot => {
+            drawDot(dot.i, dot.j);
+        });
+        dotsArray.forEach(dot => {
+            level.dots.push(dot);
+            side.add(dot.mesh);
+        });
+
+        side.position.set(-level.offset.x, level.offset.y, level.offset.z);
+        pivot.rotation.setFromVector3(new THREE.Vector3(level.rotation.x, level.rotation.y, level.rotation.z));
+
+        NOP_VIEWER.impl.scene.add(pivot);
+        pivot.add(side);
+        NOP_VIEWER.overlays.addMesh(pivot, 'custom-scene');
+    }
 }
 
 function drawDot(i, j) {
     let dot;
     geometry = new THREE.SphereGeometry(CELL_SIZE - 15, 32, 32);
     dot = new THREE.Mesh(geometry, dotMaterial);
-    dot.position.set(curLevel.offsetX + j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
-        curLevel.offsetY - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + CELL_SIZE - 8);
-    dot.name = `dot_${dotArray.length}`;
-    dotArray.push({
+    dot.position.set(j * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2), - (i) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), CELL_SIZE - 8);
+    dot.name = `dot_${dotsArray.length}`;
+    dotsArray.push({
         i: i,
         j: j,
         mesh: dot,
     });
-    NOP_VIEWER.overlays.addMesh(dot, 'custom-scene');
+    //NOP_VIEWER.overlays.addMesh(dot, 'custom-scene');
 }
 
 function drawPacman() {
@@ -144,8 +161,8 @@ function drawPacman() {
     geometry = new THREE.SphereGeometry(pacman.radius, 32, 32);
     pacman.material.side = THREE.DoubleSide;
     pacman.mesh = new THREE.Mesh(geometry, pacman.material);
-    pacman.mesh.position.set(curLevel.offsetX + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
-        curLevel.offsetY - (pacman.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offsetZ + pacman.radius);
+    pacman.mesh.position.set(curLevel.offset.x + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
+        curLevel.offset.y - (pacman.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offset.z + pacman.radius);
     pacman.mesh.name = "pacman";
     NOP_VIEWER.overlays.addMesh(pacman.mesh, 'custom-scene');
     document.addEventListener('keydown', pacmanMove);
@@ -197,8 +214,8 @@ function drawWall(level) {
             };
             geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
             const wallMesh = new THREE.Mesh(geometry, wallMaterial);
-            wallMesh.position.set(level.offsetX, level.offsetY, level.offsetZ);
-            wallMesh.rotation.setFromVector3(new THREE.Vector3(level.rotationX, level.rotationY, level.rotationZ));
+            wallMesh.position.set(level.offset.x, level.offset.y, level.offset.z);
+            wallMesh.rotation.setFromVector3(new THREE.Vector3(level.rotation.x, level.rotation.y, level.rotation.z));
             NOP_VIEWER.overlays.addMesh(wallMesh, 'custom-scene');
         }
     });
@@ -246,7 +263,7 @@ function pacmanMoveTo(x, y) {
         if (pacmanCanMove(x, y, levelGrid)) {
             pacmanMoveStep(x, y);
             if (OBJECT_LIST[levelGrid[pacman.iCell - pacman.movement.y][pacman.jCell + pacman.movement.x]] == OBJECT_TYPE.DOT)
-                curDot = dotArray.find(item => item.i == pacman.iCell - pacman.movement.y && item.j == pacman.jCell + pacman.movement.x).mesh;
+                curDot = dotsArray.find(item => item.i == pacman.iCell - pacman.movement.y && item.j == pacman.jCell + pacman.movement.x).mesh;
             setupObjectPositionTween(pacman.mesh, pacman.mesh.position.clone(), pacman.posToMove, pacman.animationTime, 0, TWEEN.Easing.Linear.None);
             updatePacmanCell(levelGrid);
         } else
