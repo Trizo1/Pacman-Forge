@@ -16,8 +16,8 @@
 </head>
 
 <body>
-    <div class="game">
-        <div class="game__container">
+    <div class="container">
+        <div class="game">
             <div class="game__top-bar">
                 <div class="game__gui">
                     <span class="game__score" id="score">
@@ -25,30 +25,76 @@
                     </span>
                     <div class="game__controls">
                         <!-- <button class="game__btn" id="pause">Пауза</button>
-                    <button class="game__btn" id="resume">Продолжить</button> -->
+                        <button class="game__btn" id="resume">Продолжить</button> -->
                         <button class="game__btn" id="newGame">Новая игра</button>
                     </div>
                 </div>
             </div>
             <div class="game__viewer">
-                <div id="viewer"></div>
+                <!-- <div id="viewer"></div> -->
+            </div>
+            <div class="game__instruction">
+                <h2 class="instruction__title">Игра "Pacman-Forge"</h2>
+                <p class="instruction__content">3D игра, основанная на оригинальном Pacman.
+                    Главной составляющей является куб, на каждой грани которого располагается игровое поле с Pacman и
+                    призраками. Границы полей связаны, то есть происходит переход между гранями при выходе за пределы
+                    этих границ. На полях имеется еда для зарабатывания очков.
+
+                </p>
+                <p class="instruction__content">
+                    Цель игры - собрать всю еду на кубе, при этом если Pacman попадется на приведение и потеряет все
+                    жизни - проигрыш.
+                </p>
+                <p class="instruction__content instruction__content_t-center">
+                    Кнопки управления:
+                </p>
+                <div class="keys">
+                    <div class="keys__item key-up">
+                        <button class="keys__btn">W</button>
+                    </div>
+                    <div class="keys__item key-left">
+                        <button class="keys__btn">A</button>
+                    </div>
+                    <div class="keys__item key-down">
+                        <button class="keys__btn">S</button>
+                    </div>
+                    <div class="keys__item key-right">
+                        <button class="keys__btn">D</button>
+                    </div>
+                </div>
+                <p class="instruction__content instruction__content_t-center">
+                    Или:
+                </p>
+                <div class="keys">
+                    <div class="keys__item key-up">
+                        <button class="keys__btn">&#9650;</button>
+                    </div>
+                    <div class="keys__item key-left">
+                        <button class="keys__btn">&#9664;</button>
+                    </div>
+                    <div class="keys__item key-down">
+                        <button class="keys__btn">&#9660;</button>
+                    </div>
+                    <div class="keys__item key-right">
+                        <button class="keys__btn">&#9654;</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Lib Scripts -->
-    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
-    <script src="./scripts/tween.umd.js"></script>
-    <!-- <script src="./scripts/three-csg.js"></script> -->
+        <!-- Lib Scripts -->
+        <!-- <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+    <script src="./scripts/tween.umd.js"></script> -->
+        <!-- <script src="./scripts/three-csg.js"></script> -->
 
-    <!-- <script src="./scripts/bundle.js"></script> -->
-    <!--  -->
+        <!-- <script src="./scripts/bundle.js"></script> -->
+        <!--  -->
 
-    <!-- My Scripts -->
-    <script type="module" src="./scripts/main.js"></script>
+        <!-- My Scripts -->
+        <!-- <script type="module" src="./scripts/main.js"></script>
     <script type="module" src="./scripts/game.js"></script>
     <script type="module" src="./scripts/setup.js"></script>
-    <script type="module" src="./scripts/pacman.js"></script>
+    <script type="module" src="./scripts/pacman.js"></script> -->
 
 
 </body>
