@@ -42,16 +42,16 @@ export function initGame() {
     drawWalls();
     drawPacman();
     drawDots();
-    NOP_VIEWER.impl.sceneUpdated(true, false);
 }
 
 function startNewGame() {
+    score = 0;
+    scoreText.innerHTML = `Счет: ${score}`;
     initLevelGrid();
     clearPacmanMovement();
     clearScene();
     resetPacman();
-    drawDots();
-    NOP_VIEWER.impl.sceneUpdated(true, false);
+    drawLevelDots(curLevel);
 }
 
 function resetPacman() {
@@ -63,13 +63,16 @@ function resetPacman() {
 function clearScene() {
     curDot = null;
     removeDots();
-    dotsArray = [];
+    NOP_VIEWER.impl.scene.remove(curLevel.pivot.name);
+    curLevel.dots = [];
+    curLevel.pivot = null;
 }
 
 function removeDots() {
-    dotsArray.forEach(dot => {
-        NOP_VIEWER.overlays.removeMesh(dot.mesh, "custom-scene");
-    });
+    /* LEVELS.forEach(level => {
+        NOP_VIEWER.overlays.removeMesh(level.pivot, "custom-scene");
+    }); */
+    NOP_VIEWER.overlays.removeMesh(curLevel.pivot, "custom-scene");
     NOP_VIEWER.impl.sceneUpdated(true, false);
 }
 
@@ -84,28 +87,32 @@ function initLevelGrid() {
 
 function drawDots() {
     for (let level of LEVELS) {
-        dotsArray = [];
-        let pivot = new THREE.Group();
-        let side = new THREE.Object3D();
-
-        let dots = findObject(OBJECT_TYPE.DOT, level.grid);
-        dots.forEach(dot => {
-            drawDot(dot.i, dot.j);
-        });
-        dotsArray.forEach(dot => {
-            level.dots.push(dot);
-            side.add(dot.mesh);
-        });
-
-        pivot.position.set(level.offset.x, level.offset.y, level.offset.z);
-        pivot.rotation.setFromVector3(new THREE.Vector3(level.rotation.x, level.rotation.y, level.rotation.z));
-
-        NOP_VIEWER.impl.scene.add(pivot);
-        pivot.add(side);
-        level.pivot = pivot;
-        NOP_VIEWER.overlays.addMesh(pivot, 'custom-scene');
+        drawLevelDots(level);
         NOP_VIEWER.impl.sceneUpdated(true, false);
     }
+}
+
+function drawLevelDots(level) {
+    dotsArray = [];
+    let pivot = new THREE.Group();
+    let side = new THREE.Object3D();
+
+    let dots = findObject(OBJECT_TYPE.DOT, level.grid);
+    dots.forEach(dot => {
+        drawDot(dot.i, dot.j);
+    });
+    dotsArray.forEach(dot => {
+        level.dots.push(dot);
+        side.add(dot.mesh);
+    });
+
+    pivot.position.set(level.offset.x, level.offset.y, level.offset.z);
+    pivot.rotation.setFromVector3(new THREE.Vector3(level.rotation.x, level.rotation.y, level.rotation.z));
+
+    NOP_VIEWER.impl.scene.add(pivot);
+    pivot.add(side);
+    level.pivot = pivot;
+    NOP_VIEWER.overlays.addMesh(pivot, 'custom-scene');
 }
 
 function drawDot(i, j) {
