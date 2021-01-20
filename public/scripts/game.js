@@ -102,7 +102,9 @@ function drawDots() {
 
         NOP_VIEWER.impl.scene.add(pivot);
         pivot.add(side);
+        level.pivot = pivot;
         NOP_VIEWER.overlays.addMesh(pivot, 'custom-scene');
+        NOP_VIEWER.impl.sceneUpdated(true, false);
     }
 }
 
@@ -166,6 +168,7 @@ function drawPacman() {
     pacman.mesh.name = "pacman";
     NOP_VIEWER.overlays.addMesh(pacman.mesh, 'custom-scene');
     document.addEventListener('keydown', pacmanMove);
+    NOP_VIEWER.impl.sceneUpdated(true, false);
 }
 
 function findPacman() {
@@ -189,6 +192,7 @@ function drawWalls() {
     for (let level of LEVELS) {
         drawWall(level);
     }
+    NOP_VIEWER.impl.sceneUpdated(true, false);
 }
 
 function drawWall(level) {
@@ -263,7 +267,7 @@ function pacmanMoveTo(x, y) {
         if (pacmanCanMove(x, y, levelGrid)) {
             pacmanMoveStep(x, y);
             if (OBJECT_LIST[levelGrid[pacman.iCell - pacman.movement.y][pacman.jCell + pacman.movement.x]] == OBJECT_TYPE.DOT)
-                curDot = dotsArray.find(item => item.i == pacman.iCell - pacman.movement.y && item.j == pacman.jCell + pacman.movement.x).mesh;
+                curDot = curLevel.dots.find(item => item.i == pacman.iCell - pacman.movement.y && item.j == pacman.jCell + pacman.movement.x).mesh;
             setupObjectPositionTween(pacman.mesh, pacman.mesh.position.clone(), pacman.posToMove, pacman.animationTime, 0, TWEEN.Easing.Linear.None);
             updatePacmanCell(levelGrid);
         } else
@@ -280,12 +284,16 @@ const movePacman = function () {
 };
 
 function eatDot() {
-    if (curDot.position.x == Math.floor(pacman.mesh.position.x) && curDot.position.y == Math.floor(pacman.mesh.position.y) &&
-        curDot.position.z == Math.floor(pacman.mesh.position.z) || curDot.position.x == Math.ceil(pacman.mesh.position.x) &&
-        curDot.position.y == Math.ceil(pacman.mesh.position.y) && curDot.position.z == Math.ceil(pacman.mesh.position.z)) {
+    let dotPos = curDot.position;
+    let offset = curLevel.offset;
+    if (dotPos.x + offset.x == Math.floor(pacman.mesh.position.x) && dotPos.y + offset.y == Math.floor(pacman.mesh.position.y) &&
+        dotPos.z + offset.z == Math.floor(pacman.mesh.position.z) || dotPos.x + offset.x == Math.ceil(pacman.mesh.position.x) &&
+        dotPos.y + offset.y == Math.ceil(pacman.mesh.position.y) && dotPos.z + offset.z == Math.ceil(pacman.mesh.position.z)) {
         score++;
         scoreText.innerHTML = `Счет: ${score}`;
-        NOP_VIEWER.overlays.removeMesh(curDot, "custom-scene");
+        let dotIndex = curLevel.pivot.children[0].children.indexOf(curDot);
+        curLevel.pivot.children[0].children.splice(dotIndex, 1);
+        NOP_VIEWER.impl.sceneUpdated(true, false);
         curDot = null;
     }
 }
