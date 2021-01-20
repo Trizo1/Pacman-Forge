@@ -103,7 +103,7 @@ function onDocumentLoadSuccess(doc) {
 
             disableEventsEvents();
             //zoomCamera();
-            //initGame();
+            initGame();
         });
     });
 }

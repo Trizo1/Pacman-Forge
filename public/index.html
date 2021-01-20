@@ -10,12 +10,23 @@
     <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.min.css"
         type="text/css">
+    <link rel="stylesheet" href="./css/preloader.css">
     <link rel="stylesheet" href="./css/style.css">
     <link rel="preconnect" href="https://fonts.gstatic.com/%22%3E">
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
+    <div class="preloader" id="preloader">
+        <div style="color: #f6d860" class="la-pacman la-2x">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
     <div class="container">
         <div class="game">
             <div class="game__top-bar">
@@ -24,14 +35,12 @@
                         Счет: 0
                     </span>
                     <div class="game__controls">
-                        <!-- <button class="game__btn" id="pause">Пауза</button>
-                        <button class="game__btn" id="resume">Продолжить</button> -->
                         <button class="game__btn" id="newGame">Новая игра</button>
                     </div>
                 </div>
             </div>
             <div class="game__viewer">
-                <!-- <div id="viewer"></div> -->
+                <div id="viewer"></div>
             </div>
             <div class="game__instruction">
                 <h2 class="instruction__title">Игра "Pacman-Forge"</h2>
@@ -81,21 +90,21 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Lib Scripts -->
-        <!-- <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
-    <script src="./scripts/tween.umd.js"></script> -->
-        <!-- <script src="./scripts/three-csg.js"></script> -->
+    <!-- Lib Scripts -->
+    <script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.min.js"></script>
+    <script src="./scripts/tween.umd.js"></script>
+    <!-- <script src="./scripts/three-csg.js"></script> -->
 
-        <!-- <script src="./scripts/bundle.js"></script> -->
-        <!--  -->
+    <!-- <script src="./scripts/bundle.js"></script> -->
+    <!--  -->
 
-        <!-- My Scripts -->
-        <!-- <script type="module" src="./scripts/main.js"></script>
+    <!-- My Scripts -->
+    <script type="module" src="./scripts/main.js"></script>
     <script type="module" src="./scripts/game.js"></script>
     <script type="module" src="./scripts/setup.js"></script>
-    <script type="module" src="./scripts/pacman.js"></script> -->
-
+    <script type="module" src="./scripts/pacman.js"></script>
 
 </body>
 

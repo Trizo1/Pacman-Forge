@@ -42,6 +42,7 @@ export function initGame() {
     drawWalls();
     drawPacman();
     drawDots();
+    document.getElementById('preloader').style.display = 'none';
 }
 
 function startNewGame() {
