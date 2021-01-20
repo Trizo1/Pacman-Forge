@@ -235,7 +235,7 @@ const BACK_LEVEL = [];
 export const LEVELS = [
     { grid: FRONT_LEVEL, offset: { x: 0, y: 0, z: CUBE_SIZE }, rotation: { x: 0, y: 0, z: 0 }, color: '#c2b853', dots: [] },
     { grid: RIGHT_LEVEL, offset: { x: CUBE_SIZE, y: 0, z: 0 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, color: '#5036d9', dots: [] },
-    /*     { grid: LEFT_LEVEL, offset: { x: -CUBE_SIZE - DEPTH, y: 0, z: 0 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, color: '#359c9c', dots: [] },
-        { grid: TOP_LEVEL, offset: { x: 0, y: CUBE_SIZE + DEPTH, z: 0 }, rotation: { x: Math.PI / 2, y: 0, z: 0 }, color: '#cb569a', dots: [] },
-        { grid: DOWN_LEVEL, offset: { x: 0, y: -CUBE_SIZE, z: 0 }, rotation: { x: Math.PI / 2, y: 0, z: 0 }, color: '#09bd77', dots: [] }, */
+    { grid: LEFT_LEVEL, offset: { x: -CUBE_SIZE - DEPTH, y: 0, z: 0 }, rotation: { x: 0, y: Math.PI / 2, z: 0 }, color: '#359c9c', dots: [] },
+    { grid: TOP_LEVEL, offset: { x: 0, y: CUBE_SIZE + DEPTH, z: 0 }, rotation: { x: Math.PI / 2, y: 0, z: 0 }, color: '#cb569a', dots: [] },
+    { grid: DOWN_LEVEL, offset: { x: 0, y: -CUBE_SIZE, z: 0 }, rotation: { x: Math.PI / 2, y: 0, z: 0 }, color: '#09bd77', dots: [] },
 ];

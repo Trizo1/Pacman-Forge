@@ -97,7 +97,7 @@ function drawDots() {
             side.add(dot.mesh);
         });
 
-        side.position.set(-level.offset.x, level.offset.y, level.offset.z);
+        pivot.position.set(level.offset.x, level.offset.y, level.offset.z);
         pivot.rotation.setFromVector3(new THREE.Vector3(level.rotation.x, level.rotation.y, level.rotation.z));
 
         NOP_VIEWER.impl.scene.add(pivot);
