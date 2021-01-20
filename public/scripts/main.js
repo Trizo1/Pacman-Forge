@@ -57,7 +57,23 @@ function launchViewer() {
                     frags.setMaterial(fragid, material);
                 });
             }
-            viewer.impl.invalidate(true);
+
+            /* var instanceTree = viewer.impl.model.getInstanceTree();
+            var fragIds = [];
+            instanceTree.enumNodeFragments(3, function (fragId) {
+                fragIds.push(fragId);
+            });
+
+            fragIds.forEach(function (fragId) {
+                var renderProxy = viewer.impl.getRenderProxy(viewer.impl.model, fragId);
+                var fragmentproxy = viewer.impl.getFragmentProxy(viewer.impl.model, fragId);
+                console.log(renderProxy);
+                console.log(fragmentproxy);
+                renderProxy.rotation.setFromVector3(new THREE.Vector3(15, 50, 0));
+                NOP_VIEWER.impl.sceneUpdated(true, false);
+            }); */
+
+            viewer.impl.sceneUpdated(true, false);
             viewer.setOptimizeNavigation(true);
             viewer.setQualityLevel(true, true);
             viewer.setProgressiveRendering(false);
