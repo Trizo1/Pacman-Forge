@@ -1,5 +1,6 @@
 import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVELS, } from './setup.js';
 import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacmanCell, pacmanMoveStep } from './pacman.js';
+import { Blinky, Pinky, Inky, Clyde, ghostCanMove, ghostMoveStep, clearghostMovement, updateGhostCell } from './ghosts.js'
 // import * as THREE from "../node_modules/three/build/three.module.js";
 // import GLTFLoader from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
 // import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/GLTFLoader.js';
@@ -42,10 +43,13 @@ export async function initGame() {
     drawWalls().then(() => {
         drawDots().then(() => {
             drawPacman().then(() => {
+                drawGhosts();
+                releaseGhosts();
                 document.getElementById('preloader').style.display = 'none';
             })
         })
     });
+
     // await drawDots();
 }
 
@@ -140,6 +144,22 @@ function drawDot(i, j) {
     //NOP_VIEWER.overlays.addMesh(dot, 'custom-scene');
 }
 
+async function drawGhosts() {
+    return new Promise(function (resolve, reject) {
+        findGhosts();
+        let Blinky_geometry = new THREE.BoxGeometry(Blinky.size, Blinky.size, Blinky.size);
+        Blinky.material.side = THREE.DoubleSide;
+        Blinky.mesh = new THREE.Mesh(Blinky_geometry, Blinky.material);
+        Blinky.mesh.position.set(curLevel.offset.x + Blinky.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
+            curLevel.offset.y - (Blinky.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offset.z + Blinky.size / 2);
+        Blinky.mesh.name = "Blinky";
+        NOP_VIEWER.overlays.addMesh(Blinky.mesh, 'custom-scene');
+        NOP_VIEWER.impl.sceneUpdated(true, false);
+        console.log(Blinky.mesh);
+        resolve();
+    });
+}
+
 async function drawPacman() {
     return new Promise(function (resolve, reject) {
         findPacman();
@@ -196,6 +216,14 @@ function findPacman() {
     let obj = findObject(OBJECT_TYPE.PACMAN, curLevel.grid)[0];
     pacman.iCell = obj.i;
     pacman.jCell = obj.j;
+}
+
+function findGhosts() {
+    let obj = findObject(OBJECT_TYPE.BLINKY, curLevel.grid)[0];
+    Blinky.iCell = obj.i;
+    Blinky.jCell = obj.j;
+    Blinky.prevCell = { x: obj.j, y: obj.i - 1 };
+    levelGrid[obj.i][obj.j] = 4;
 }
 
 function findObject(object, grid) {
@@ -293,6 +321,53 @@ function pacmanMove(e) {
     }
 }
 
+function choseGhostDir(ghost, pacman, grid) {
+
+    let leftCell = 999, rightCell = 999, topCell = 999, downCell = 999;
+    switch (ghost.type) {
+        case 'blinky':
+
+            if ((grid[ghost.iCell][ghost.jCell - 1] == 0 || grid[ghost.iCell][ghost.jCell - 1] == 4) && (ghost.iCell) != ghost.prevCell.y && (ghost.jCell - 1) != ghost.prevCell.x) {
+                leftCell = Math.floor(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell), 2) + Math.pow(pacman.jCell - (ghost.jCell - 1), 2)));
+            }
+            if ((grid[ghost.iCell][ghost.jCell + 1] == 0 || grid[ghost.iCell][ghost.jCell + 1] == 4) && (ghost.iCell) != ghost.prevCell.y && (ghost.jCell + 1) != ghost.prevCell.x) {
+                rightCell = Math.floor(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell), 2) + Math.pow(pacman.jCell - (ghost.jCell + 1), 2)));
+            }
+            if ((grid[ghost.iCell - 1][ghost.jCell] == 0 || grid[ghost.iCell - 1][ghost.jCell] == 4) && (ghost.iCell - 1) != ghost.prevCell.y && (ghost.jCell) != ghost.prevCell.x) {
+                topCell = Math.floor(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell - 1), 2) + Math.pow(pacman.jCell - (ghost.jCell), 2)));
+            }
+            if ((grid[ghost.iCell + 1][ghost.jCell] == 0 || grid[ghost.iCell + 1][ghost.jCell] == 4) && (ghost.iCell + 1) != ghost.prevCell.y && (ghost.jCell) != ghost.prevCell.x) {
+                downCell = Math.floor(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell + 1), 2) + Math.pow(pacman.jCell - (ghost.jCell), 2)));
+            }
+            // console.log(grid[ghost.iCell + 1][ghost.jCell]);
+            // console.log(Math.min(leftCell, rightCell, topCell, downCell));
+
+            let smallest = Math.min(leftCell, rightCell, topCell, downCell)
+            // console.log(leftCell, rightCell, topCell, downCell);
+            if (smallest == topCell) {
+                ghostMoveTo(0, -1, ghost);
+                console.log('1')
+                break;
+            }
+            if (smallest == leftCell) {
+                ghostMoveTo(-1, 0, ghost)
+                console.log('2')
+                break;
+            }
+            if (smallest == downCell) {
+                ghostMoveTo(0, 1, ghost);
+                console.log('3')
+                break;
+            }
+            if (smallest == rightCell) {
+                ghostMoveTo(1, 0, ghost);
+                console.log('4')
+                break;
+            }
+    }
+}
+
+
 function pacmanMoveTo(x, y) {
     pacman.moveInterval = setInterval(() => {
         if (pacmanCanMove(x, y, levelGrid)) {
@@ -307,11 +382,35 @@ function pacmanMoveTo(x, y) {
     movePacman();
 }
 
+function ghostMoveTo(x, y, ghost) {
+    // if (ghostCanMove(x, y, levelGrid, ghost)) {
+    // console.log('3');
+    ghostMoveStep(x, y, ghost);
+    setupObjectPositionTween(ghost.mesh, ghost.mesh.position.clone(), ghost.posToMove, ghost.animationTime, 0, TWEEN.Easing.Linear.None);
+    updateGhostCell(ghost);
+    // 
+}
+
+function releaseGhosts() {
+    Blinky.moveInterval = setInterval(() => {
+        choseGhostDir(Blinky, pacman, levelGrid);
+        // console.log(Blinky.iCell, Blinky.jCell);
+
+    }, Blinky.animationTime + 20);
+    moveGhost();
+}
+
 const movePacman = function () {
     pacman.reqMove = requestAnimationFrame(movePacman);
     TWEEN.update();
     NOP_VIEWER.impl.sceneUpdated(true, false);
     //NOP_VIEWER.impl.invalidate(true, false, true); то же самое NOP_VIEWER.impl.sceneUpdated(true, false);
+};
+
+const moveGhost = function () {
+    Blinky.reqMove = requestAnimationFrame(moveGhost);
+    TWEEN.update();
+    NOP_VIEWER.impl.sceneUpdated(true, false);
 };
 
 function eatDot() {
