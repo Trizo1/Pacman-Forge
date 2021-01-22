@@ -1,6 +1,6 @@
 import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVELS, } from './setup.js';
 import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacmanCell, pacmanMoveStep } from './pacman.js';
-import { Blinky, Pinky, Inky, Clyde, ghostCanMove, ghostMoveStep, clearghostMovement, updateGhostCell } from './ghosts.js'
+import { Blinky, Pinky, Inky, Clyde, ghostCanMove, ghostMoveStep, clearGhostMovement, updateGhostCell, GHOST_MOVEMENT } from './ghosts.js'
 
 
 let curLevel = LEVELS[0];
@@ -28,8 +28,8 @@ export async function initGame() {
     drawWalls().then(() => {
         drawDots().then(() => {
             drawPacman().then(() => {
-                /* drawGhosts();
-                releaseGhosts(); */
+                drawGhosts();
+                releaseGhosts()
                 document.getElementById('preloader').style.display = 'none';
             })
         })
@@ -41,15 +41,24 @@ function startNewGame() {
     scoreText.innerHTML = `Счет: ${score}`;
     initLevelGrid();
     clearPacmanMovement();
+    clearGhostMovement(Blinky);
     clearScene();
     resetPacman();
+    resetGhosts();
     drawLevelDots(curLevel);
+    releaseGhosts();
 }
 
 function resetPacman() {
     findPacman();
     pacman.mesh.position.set(curLevel.offset.x + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
         curLevel.offset.y - (pacman.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offset.z + pacman.radius);
+}
+
+function resetGhosts() {
+    findGhosts();
+    Blinky.mesh.position.set(curLevel.offset.x + Blinky.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
+        curLevel.offset.y - (Blinky.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offset.z + Blinky.size);
 }
 
 function clearScene() {
@@ -138,7 +147,6 @@ async function drawGhosts() {
         Blinky.mesh.name = "Blinky";
         NOP_VIEWER.overlays.addMesh(Blinky.mesh, 'custom-scene');
         NOP_VIEWER.impl.sceneUpdated(true, false);
-        console.log(Blinky.mesh);
         resolve();
     });
 }
@@ -205,7 +213,8 @@ function findGhosts() {
     let obj = findObject(OBJECT_TYPE.BLINKY, curLevel.grid)[0];
     Blinky.iCell = obj.i;
     Blinky.jCell = obj.j;
-    Blinky.prevCell = { x: obj.j, y: obj.i - 1 };
+    Blinky.prevCell = { x: obj.j, y: obj.i };
+    Blinky.prevVal = 0;
     levelGrid[obj.i][obj.j] = 4;
 }
 
@@ -259,7 +268,6 @@ async function drawWall(level) {
                 NOP_VIEWER.overlays.addMesh(wallMesh, 'custom-scene');
             }
         }
-        console.log("level done ");
         resolve();
 
     });
@@ -305,47 +313,64 @@ function pacmanMove(e) {
 }
 
 function choseGhostDir(ghost, pacman, grid) {
-
+    let counter;
     let leftCell = 999, rightCell = 999, topCell = 999, downCell = 999;
     switch (ghost.type) {
         case 'blinky':
 
-            if ((grid[ghost.iCell][ghost.jCell - 1] == 0 || grid[ghost.iCell][ghost.jCell - 1] == 4) && (ghost.iCell) != ghost.prevCell.y && (ghost.jCell - 1) != ghost.prevCell.x) {
-                leftCell = Math.floor(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell), 2) + Math.pow(pacman.jCell - (ghost.jCell - 1), 2)));
+            if ((grid[ghost.iCell][ghost.jCell - 1] == 0 || grid[ghost.iCell][ghost.jCell - 1] == 4) && (ghost.jCell - 1) != ghost.prevCell.x) {
+                leftCell = Math.round(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell), 2) + Math.pow(pacman.jCell - (ghost.jCell - 1), 2)));
+                ++counter;
             }
-            if ((grid[ghost.iCell][ghost.jCell + 1] == 0 || grid[ghost.iCell][ghost.jCell + 1] == 4) && (ghost.iCell) != ghost.prevCell.y && (ghost.jCell + 1) != ghost.prevCell.x) {
-                rightCell = Math.floor(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell), 2) + Math.pow(pacman.jCell - (ghost.jCell + 1), 2)));
+            if ((grid[ghost.iCell][ghost.jCell + 1] == 0 || grid[ghost.iCell][ghost.jCell + 1] == 4) && (ghost.jCell + 1) != ghost.prevCell.x) {
+                rightCell = Math.round(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell), 2) + Math.pow(pacman.jCell - (ghost.jCell + 1), 2)));
+                ++counter;
             }
-            if ((grid[ghost.iCell - 1][ghost.jCell] == 0 || grid[ghost.iCell - 1][ghost.jCell] == 4) && (ghost.iCell - 1) != ghost.prevCell.y && (ghost.jCell) != ghost.prevCell.x) {
-                topCell = Math.floor(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell - 1), 2) + Math.pow(pacman.jCell - (ghost.jCell), 2)));
+            if ((grid[ghost.iCell - 1][ghost.jCell] == 0 || grid[ghost.iCell - 1][ghost.jCell] == 4) && (ghost.iCell - 1) != ghost.prevCell.y) {
+                topCell = Math.round(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell - 1), 2) + Math.pow(pacman.jCell - (ghost.jCell), 2)));
+                ++counter;
             }
-            if ((grid[ghost.iCell + 1][ghost.jCell] == 0 || grid[ghost.iCell + 1][ghost.jCell] == 4) && (ghost.iCell + 1) != ghost.prevCell.y && (ghost.jCell) != ghost.prevCell.x) {
-                downCell = Math.floor(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell + 1), 2) + Math.pow(pacman.jCell - (ghost.jCell), 2)));
+            if ((grid[ghost.iCell + 1][ghost.jCell] == 0 || grid[ghost.iCell + 1][ghost.jCell] == 4) && (ghost.iCell + 1) != ghost.prevCell.y) {
+                downCell = Math.round(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell + 1), 2) + Math.pow(pacman.jCell - (ghost.jCell), 2)));
+                ++counter;
             }
-            // console.log(grid[ghost.iCell + 1][ghost.jCell]);
-            // console.log(Math.min(leftCell, rightCell, topCell, downCell));
-
-            let smallest = Math.min(leftCell, rightCell, topCell, downCell)
-            // console.log(leftCell, rightCell, topCell, downCell);
-            if (smallest == topCell) {
-                ghostMoveTo(0, -1, ghost);
-                console.log('1')
-                break;
-            }
-            if (smallest == leftCell) {
-                ghostMoveTo(-1, 0, ghost)
-                console.log('2')
-                break;
-            }
-            if (smallest == downCell) {
-                ghostMoveTo(0, 1, ghost);
-                console.log('3')
-                break;
-            }
-            if (smallest == rightCell) {
-                ghostMoveTo(1, 0, ghost);
-                console.log('4')
-                break;
+            if (counter > 1); {
+                let smallest = Math.min(leftCell, rightCell, topCell, downCell)
+                if (smallest == topCell && smallest != 999) {
+                    if (ghostCanMove(0, 1, levelGrid, ghost) && ghost.moveDirection != GHOST_MOVEMENT.UP) {
+                        if (ghost.moveInterval && ghost.reqMove)
+                            clearGhostMovement(ghost);
+                        ghost.moveDirection = GHOST_MOVEMENT.UP;
+                        ghostMoveTo(0, 1, ghost);
+                    }
+                }
+                else if (smallest == downCell && smallest != 999) {
+                    if (ghostCanMove(0, -1, levelGrid, ghost) && ghost.moveDirection != GHOST_MOVEMENT.DOWN) {
+                        if (ghost.moveInterval && ghost.reqMove)
+                            clearGhostMovement(ghost);
+                        ghost.moveDirection = GHOST_MOVEMENT.DOWN;
+                        ghostMoveTo(0, -1, ghost);
+                    }
+                }
+                else if (smallest == leftCell && smallest != 999) {
+                    if (ghostCanMove(-1, 0, levelGrid, ghost) && ghost.moveDirection != GHOST_MOVEMENT.LEFT) {
+                        if (ghost.moveInterval && ghost.reqMove)
+                            clearGhostMovement(ghost);
+                        ghost.moveDirection = GHOST_MOVEMENT.LEFT;
+                        ghostMoveTo(-1, 0, ghost);
+                    }
+                }
+                else if (smallest == rightCell && smallest != 999) {
+                    if (ghostCanMove(1, 0, levelGrid, ghost) && ghost.moveDirection != GHOST_MOVEMENT.RIGHT) {
+                        if (ghost.moveInterval && ghost.reqMove)
+                            clearGhostMovement(ghost);
+                        ghost.moveDirection = GHOST_MOVEMENT.RIGHT;
+                        ghostMoveTo(1, 0, ghost);
+                    }
+                }
+                else {
+                    ghost.prevCell = { x: ghost.jCell, y: ghost.iCell }
+                }
             }
     }
 }
@@ -366,21 +391,30 @@ function pacmanMoveTo(x, y) {
 }
 
 function ghostMoveTo(x, y, ghost) {
-    // if (ghostCanMove(x, y, levelGrid, ghost)) {
-    // console.log('3');
-    ghostMoveStep(x, y, ghost);
-    setupObjectPositionTween(ghost.mesh, ghost.mesh.position.clone(), ghost.posToMove, ghost.animationTime, 0, TWEEN.Easing.Linear.None);
-    updateGhostCell(ghost);
-    // 
+    Blinky.moveInterval = setInterval(() => {
+        if (ghostCanMove(x, y, levelGrid, ghost)) {
+            ghostMoveStep(x, y, ghost);
+            setupObjectPositionTween(ghost.mesh, ghost.mesh.position.clone(), ghost.posToMove, ghost.animationTime, 0, TWEEN.Easing.Linear.None);
+            updateGhostCell(ghost, levelGrid);
+            choseGhostDir(ghost, pacman, levelGrid)
+        }
+        else {
+            if (OBJECT_LIST[levelGrid[ghost.iCell - y][ghost.jCell + x]] == OBJECT_TYPE.PACMAN) {
+                alert('Вы проиграли!');
+                startNewGame();
+            }
+            else {
+                clearGhostMovement(ghost);
+                releaseGhosts()
+            }
+        }
+    }, Blinky.animationTime + 20);
+    moveGhost();
+
 }
 
 function releaseGhosts() {
-    Blinky.moveInterval = setInterval(() => {
-        choseGhostDir(Blinky, pacman, levelGrid);
-        // console.log(Blinky.iCell, Blinky.jCell);
-
-    }, Blinky.animationTime + 20);
-    moveGhost();
+    choseGhostDir(Blinky, pacman, levelGrid);
 }
 
 const movePacman = function () {
