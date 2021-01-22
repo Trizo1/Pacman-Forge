@@ -1,19 +1,12 @@
 import { OBJECT_TYPE, OBJECT_LIST, CELL_SIZE, DEPTH, CUBE_SIZE, WALL_SIZE, LEVELS, } from './setup.js';
 import { pacman, PACMAN_MOVEMENT, clearPacmanMovement, pacmanCanMove, updatePacmanCell, pacmanMoveStep } from './pacman.js';
 import { Blinky, Pinky, Inky, Clyde, ghostCanMove, ghostMoveStep, clearghostMovement, updateGhostCell } from './ghosts.js'
-// import * as THREE from "../node_modules/three/build/three.module.js";
-// import GLTFLoader from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
-// import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/GLTFLoader.js';
-// import { GLTFLoader, Scene } from 'three-full';
-// const loader = new GLTFLoader();
-// import CSG from './three-csg.js';
 
 
 let curLevel = LEVELS[0];
 
 let dotsArray = [];
 let curDot = null;
-//let pacmanTween;
 
 let geometry;
 const dotMaterial = new THREE.MeshLambertMaterial({ color: '#FFFFFF' });
@@ -29,28 +22,18 @@ window.onload = function () {
 }
 
 export async function initGame() {
-    /* document.getElementById("pause").onclick = function () {
-        pacmanTween.stop();
-        clearPacmanMovement();
-    };
-    document.getElementById("pause").onclick = function () {
-        pacmanTween.start();
-        pacmanMoveTo(pacman.movement.x, pacman.movement.y);
-    }; */
     initLevelGrid();
     if (!NOP_VIEWER.overlays.hasScene('custom-scene'))
         NOP_VIEWER.overlays.addScene('custom-scene');
     drawWalls().then(() => {
         drawDots().then(() => {
             drawPacman().then(() => {
-                drawGhosts();
-                releaseGhosts();
+                /* drawGhosts();
+                releaseGhosts(); */
                 document.getElementById('preloader').style.display = 'none';
             })
         })
     });
-
-    // await drawDots();
 }
 
 function startNewGame() {
