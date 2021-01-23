@@ -43,16 +43,18 @@ function startNewGame() {
     clearPacmanMovement();
     clearGhostMovement(Blinky);
     clearScene();
+    pacman.tween.stop();
+    Blinky.tween.stop();
+    drawLevelDots(curLevel);
     findPacman().then(() => {
         pacman.mesh.position.set(curLevel.offset.x + pacman.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
             curLevel.offset.y - (pacman.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offset.z + pacman.radius);
+        findGhosts().then(() => {
+            Blinky.mesh.position.set(curLevel.offset.x + Blinky.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
+                curLevel.offset.y - (Blinky.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offset.z + Blinky.size);
+            releaseGhosts();
+        });
     });
-    findGhosts().then(() => {
-        Blinky.mesh.position.set(curLevel.offset.x + Blinky.jCell * CELL_SIZE - (CUBE_SIZE - CELL_SIZE / 2),
-            curLevel.offset.y - (Blinky.iCell) * CELL_SIZE + (CUBE_SIZE - CELL_SIZE / 2), curLevel.offset.z + Blinky.size);
-    });
-    drawLevelDots(curLevel);
-    releaseGhosts();
 }
 
 function clearScene() {
@@ -174,7 +176,7 @@ function findGhosts() {
         Blinky.jCell = obj.j;
         Blinky.prevCell = { x: obj.j, y: obj.i };
         Blinky.prevVal = 0;
-        levelGrid[obj.i][obj.j] = 4;
+        //levelGrid[obj.i][obj.j] = 4;
         resolve();
     });
 }
@@ -228,10 +230,7 @@ async function drawWall(level) {
             }
         }
         resolve();
-
     });
-
-
 }
 
 function pacmanMove(e) {
@@ -276,7 +275,6 @@ function choseGhostDir(ghost, pacman, grid) {
     let leftCell = 999, rightCell = 999, topCell = 999, downCell = 999;
     switch (ghost.type) {
         case 'blinky':
-
             if ((grid[ghost.iCell][ghost.jCell - 1] == 0 || grid[ghost.iCell][ghost.jCell - 1] == 4) && (ghost.jCell - 1) != ghost.prevCell.x) {
                 leftCell = Math.round(Math.sqrt(Math.pow(pacman.iCell - (ghost.iCell), 2) + Math.pow(pacman.jCell - (ghost.jCell - 1), 2)));
                 ++counter;
@@ -334,14 +332,13 @@ function choseGhostDir(ghost, pacman, grid) {
     }
 }
 
-
 function pacmanMoveTo(x, y) {
     pacman.moveInterval = setInterval(() => {
         if (pacmanCanMove(x, y, levelGrid)) {
             pacmanMoveStep(x, y);
             if (OBJECT_LIST[levelGrid[pacman.iCell - pacman.movement.y][pacman.jCell + pacman.movement.x]] == OBJECT_TYPE.DOT)
                 curDot = curLevel.dots.find(item => item.i == pacman.iCell - pacman.movement.y && item.j == pacman.jCell + pacman.movement.x).mesh;
-            setupObjectPositionTween(pacman.mesh, pacman.mesh.position.clone(), pacman.posToMove, pacman.animationTime, 0, TWEEN.Easing.Linear.None);
+            setupObjectPositionTween(pacman, pacman.mesh.position.clone(), pacman.posToMove, pacman.animationTime, 0, TWEEN.Easing.Linear.None);
             updatePacmanCell(levelGrid);
         } else
             if (OBJECT_LIST[levelGrid[pacman.iCell - y][pacman.jCell + x]] == OBJECT_TYPE.BLINKY) {
@@ -357,9 +354,9 @@ function ghostMoveTo(x, y, ghost) {
     Blinky.moveInterval = setInterval(() => {
         if (ghostCanMove(x, y, levelGrid, ghost)) {
             ghostMoveStep(x, y, ghost);
-            setupObjectPositionTween(ghost.mesh, ghost.mesh.position.clone(), ghost.posToMove, ghost.animationTime, 0, TWEEN.Easing.Linear.None);
+            setupObjectPositionTween(ghost, ghost.mesh.position.clone(), ghost.posToMove, ghost.animationTime, 0, TWEEN.Easing.Linear.None);
             updateGhostCell(ghost, levelGrid);
-            choseGhostDir(ghost, pacman, levelGrid)
+            choseGhostDir(ghost, pacman, levelGrid);
         }
         else {
             if (OBJECT_LIST[levelGrid[ghost.iCell - y][ghost.jCell + x]] == OBJECT_TYPE.PACMAN) {
@@ -368,7 +365,7 @@ function ghostMoveTo(x, y, ghost) {
             }
             else {
                 clearGhostMovement(ghost);
-                releaseGhosts()
+                releaseGhosts();
             }
         }
     }, Blinky.animationTime + 20);
@@ -408,12 +405,12 @@ function eatDot() {
 }
 
 function setupObjectPositionTween(object, source, target, duration, delay, easing) {
-    new TWEEN.Tween(source)
+    object.tween = new TWEEN.Tween(source)
         .to(target, duration)
         .delay(delay)
         .easing(easing)
         .onUpdate(function () {
-            object.position.copy(source);
+            object.mesh.position.copy(source);
             if (curDot)
                 eatDot();
         })
