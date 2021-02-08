@@ -25,15 +25,12 @@ export async function initGame() {
     initLevelGrid();
     if (!NOP_VIEWER.overlays.hasScene('custom-scene'))
         NOP_VIEWER.overlays.addScene('custom-scene');
-    drawWalls().then(() => {
-        drawDots().then(() => {
-            drawPacman().then(() => {
-                drawGhosts();
-                releaseGhosts()
-                document.getElementById('preloader').style.display = 'none';
-            })
-        })
-    });
+    await drawWalls();
+    await drawDots();
+    await drawPacman();
+    await drawGhosts();
+    releaseGhosts();
+    document.getElementById('preloader').style.display = 'none';
 }
 
 function startNewGame() {
