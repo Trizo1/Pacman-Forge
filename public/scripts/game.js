@@ -16,7 +16,7 @@ let score = 0;
 let scoreText;
 
 
-window.onload = function () {
+window.onload = function () { // Rewrite to main.ts
     scoreText = document.getElementById('score');
     document.getElementById('newGame').onclick = startNewGame;
 }
@@ -57,12 +57,12 @@ function startNewGame() {
 function clearScene() {
     curDot = null;
     removeDots();
-    NOP_VIEWER.impl.scene.remove(curLevel.pivot.name);
+    NOP_VIEWER.impl.scene.remove(curLevel.pivot.name); // Rewrite to main.ts
     curLevel.dots = [];
     curLevel.pivot = null;
 }
 
-function removeDots() {
+function removeDots() { // Rewrite to main.ts
     NOP_VIEWER.overlays.removeMesh(curLevel.pivot, "custom-scene");
     NOP_VIEWER.impl.sceneUpdated(true, false);
 }
@@ -76,7 +76,7 @@ function initLevelGrid() {
     }
 }
 
-async function drawDots() {
+async function drawDots() { // Rewrite to main.ts
     for (const level of LEVELS) {
         await drawLevelDots(level);
     }

@@ -43,4 +43,3 @@ app.get('/oauth', function (req, res) {
 app.listen(port, () => {
     console.log('The app is running on  http://localhost:' + port)
 });
-
